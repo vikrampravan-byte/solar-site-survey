@@ -1,0 +1,847 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Solar Site Survey</title>
+  <style>
+    :root{
+      --bg: #fff6f1;
+      --grid: #efd9cc;
+      --head: #8b3f10;
+      --headText: #fff;
+      --text: #2f241a;
+      --ink: #1f160f;
+      --accent: #f05a28;
+      --accent-2: #ffb347;
+      --card: #ffffff;
+      --muted: #7b6d62;
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Space+Grotesk:wght@400;500;600&display=swap');
+    body{
+      font-family: "Space Grotesk", "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #ffe7d9 0%, rgba(255,231,217,0) 60%),
+        radial-gradient(900px 400px at 90% -20%, #ffe6b5 0%, rgba(255,230,181,0) 55%),
+        #f4f1ee;
+      margin:0; color:var(--text);
+    }
+    .wrap{
+      max-width: 1100px; margin: 24px auto; background:var(--card);
+      border:1px solid #eadfd7; padding:16px; border-radius:16px;
+      box-shadow: 0 18px 60px rgba(31,22,15,0.12);
+      animation: fadeUp 420ms ease;
+    }
+    .hero{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 16px; border-radius:12px;
+      background: linear-gradient(135deg, #fff2e8 0%, #ffe7c8 100%);
+      border:1px solid #f3dccb; margin-bottom:12px;
+    }
+    .hero h2{
+      margin:0; font-weight:600; color:var(--ink);
+      font-family: "Playfair Display", "Times New Roman", serif;
+      letter-spacing: 0.3px;
+    }
+    .hero small{ color:var(--muted); font-weight:500; }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; border-bottom:1px solid #eadfd7; padding-bottom:10px; }
+    .tab{
+      padding:8px 12px; border:1px solid #eadfd7; cursor:pointer; background:#fff7f1;
+      border-radius:999px; transition: all 140ms ease;
+    }
+    .tab:hover{ transform: translateY(-1px); box-shadow:0 6px 14px rgba(31,22,15,0.08); }
+    .tab.active{
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-color: transparent; color:#1b120c; font-weight:600;
+    }
+    .panel{ display:none; padding-top:12px; }
+    .panel.active{ display:block; }
+    table{ width:100%; border-collapse:collapse; background:var(--bg); border-radius:10px; overflow:hidden; }
+    th, td{ border:1px solid var(--grid); padding:8px; vertical-align:middle; }
+    th{
+      background: linear-gradient(135deg, #8b3f10, #b85616);
+      color:var(--headText); text-align:left; font-weight:600;
+    }
+    td input, td select, td textarea{
+      width:100%; border:1px solid #e4d7ce; padding:8px; background:#fff; font-size:14px; box-sizing:border-box;
+      border-radius:8px; transition: box-shadow 120ms ease, border-color 120ms ease;
+    }
+    td input:focus, td select:focus, td textarea:focus{
+      outline:none; border-color:#f05a28; box-shadow:0 0 0 3px rgba(240,90,40,0.18);
+    }
+    .actions{ margin-top:12px; display:flex; gap:8px; }
+    .actions button{
+      padding:10px 16px; cursor:pointer; border-radius:999px; border:none; font-weight:600;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:#1b120c; box-shadow:0 10px 22px rgba(240,90,40,0.22);
+    }
+    .actions button:hover{ transform: translateY(-1px); }
+    .topbar{
+      display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap;
+      background:#fff7f1; border:1px solid #eadfd7; padding:10px; border-radius:12px;
+    }
+    .topbar label{ font-size:13px; }
+    .topbar input, .topbar select{ padding:6px; border-radius:8px; border:1px solid #e4d7ce; }
+
+    /* Calculator */
+    .calc-center { display: flex; justify-content: center; margin-top: 16px; }
+    .calc-wrap { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+
+    .calculator { padding: 12px; border: 1px solid #e8ddd5; background: #fff7f1; width: 260px; box-sizing: border-box; border-radius:14px; }
+    .calculator h3 { font-size: 14px; margin: 0 0 8px; text-align:center; color: var(--ink); }
+    .calc-row input {
+      width: 100%; padding: 10px 12px; font-size: 18px; margin-bottom: 8px; box-sizing: border-box;
+      text-align: right; letter-spacing: 0.3px; background:#fff; border:1px solid #eadfd7; border-radius:10px;
+    }
+    .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .calc-grid button {
+      height: 38px; font-size: 14px; cursor: pointer; border-radius:10px; border:1px solid #eadfd7;
+      background:#fff; transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+      font-weight: 700;
+    }
+    .calc-grid button:hover{ transform: translateY(-1px); box-shadow:0 8px 16px rgba(31,22,15,0.08); }
+    .calc-grid .calc-op{ background:#fff1e7; }
+    .calc-grid .calc-fn{ background:#ffe9d6; font-weight:600; }
+    .calc-grid .calc-eq{
+      grid-column: span 2; height: 38px; border:none; border-radius:10px; font-weight:700;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#1b120c; font-size:16px;
+    }
+    .calc-back { grid-column: span 2; }
+
+    .calc-history {
+      min-width: 120px;
+      max-width: 240px;
+      width: 40vw;
+      border: 1px solid #e8ddd5;
+      background: #fff7f1;
+      box-sizing: border-box;
+      padding: 6px;
+      overflow-y: auto;
+      border-radius:12px;
+    }
+    .hist-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; text-align:center; }
+    #calc-history-list { font-size: 12px; line-height: 1.4; font-weight:700; }
+    @keyframes fadeUp{
+      from{ opacity:0; transform: translateY(8px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h2>Solar Site Survey</h2>
+      <small>Capture, store, and export clean site data</small>
+    </div>
+
+    <div class="topbar">
+      <label><input type="radio" name="custType" value="new" checked> New Customer</label>
+      <label><input type="radio" name="custType" value="existing"> Existing Customer</label>
+      <select id="existingList" disabled></select>
+      <button type="button" id="btnLoad">Load</button>
+      <button type="button" id="btnSaveLocal">Save (Local)</button>
+      <button type="button" id="btnDeleteLocal">Delete Customer</button>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div id="panels">
+      <!-- Customer Details -->
+      <div class="panel active" data-tab="Customer Details">
+        <table>
+          <thead><tr><th>Field</th><th>Information</th></tr></thead>
+          <tbody>
+            <tr><td>Customer Name</td><td><input id="cust_name"></td></tr>
+            <tr><td>Father/Company Name</td><td><input id="cust_father_company"></td></tr>
+            <tr><td>Mobile Number</td><td><input id="cust_mobile"></td></tr>
+            <tr><td>Alternate Mobile</td><td><input id="cust_alt_mobile"></td></tr>
+            <tr><td>Email</td><td><input id="cust_email"></td></tr>
+            <tr><td>PAN / Aadhaar</td><td><input id="cust_pan_aadhaar"></td></tr>
+            <tr><td>GST Number</td><td><input id="cust_gst"></td></tr>
+            <tr>
+              <td>Customer Type (Residential/Commercial/Industrial)</td>
+              <td>
+                <select id="cust_type">
+                  <option value="">Select type</option>
+                  <option>Residential</option>
+                  <option>Commercial</option>
+                  <option>Industrial</option>
+                </select>
+              </td>
+            </tr>
+            <tr><td>Address Line 1</td><td><input id="cust_addr1"></td></tr>
+            <tr><td>Address Line 2</td><td><input id="cust_addr2"></td></tr>
+            <tr><td>City</td><td><input id="cust_city"></td></tr>
+            <tr><td>State</td><td><input id="cust_state"></td></tr>
+            <tr><td>PIN Code</td><td><input id="cust_pin"></td></tr>
+            <tr><td>Bank Name</td><td><input id="cust_bank"></td></tr>
+            <tr><td>Account Number</td><td><input id="cust_acc"></td></tr>
+            <tr><td>IFSC Code</td><td><input id="cust_ifsc"></td></tr>
+            <tr><td>UPI ID</td><td><input id="cust_upi"></td></tr>
+            <tr>
+              <td>Passbook Photo</td>
+              <td><input id="cust_passbook" type="file" accept="image/*" capture="environment"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Site Survey -->
+      <div class="panel" data-tab="Site Survey">
+        <table>
+          <thead><tr><th>Field</th><th>Information</th></tr></thead>
+          <tbody>
+            <tr><td>Installation Address</td><td><input id="site_address"></td></tr>
+            <tr><td>Landmark</td><td><input id="site_landmark"></td></tr>
+            <tr>
+              <td>Roof Type (RCC/Tin/Ground)</td>
+              <td>
+                <select id="site_roof_type">
+                  <option value="">Select roof type</option>
+                  <option>RCC</option>
+                  <option>Tin</option>
+                  <option>Ground</option>
+                </select>
+              </td>
+            </tr>
+            <tr><td>Roof Height (ft)</td><td><input id="site_roof_height"></td></tr>
+            <tr><td>Available Roof Area (sqft)</td><td><input id="site_roof_area"></td></tr>
+            <tr><td>Roof Direction</td><td><input id="site_roof_direction"></td></tr>
+            <tr>
+              <td>Shadow Issue (Yes/No)</td>
+              <td>
+                <select id="site_shadow">
+                  <option value="">Select</option>
+                  <option>Yes</option>
+                  <option>No</option>
+                </select>
+              </td>
+            </tr>
+            <tr><td>Nearest Transformer Distance</td><td><input id="site_transformer"></td></tr>
+            <tr><td>DISCOM Name</td><td><input id="site_discom"></td></tr>
+            <tr><td>Existing Meter Type</td><td><input id="site_meter"></td></tr>
+            <tr><td>Sanctioned Load (kW)</td><td><input id="site_load"></td></tr>
+            <tr><td>Average Monthly Bill</td><td><input id="site_bill"></td></tr>
+            <tr><td>Existing Solar Installed</td><td><input id="site_existing_solar"></td></tr>
+            <tr><td>Survey Date</td><td><input id="site_date" type="date"></td></tr>
+            <tr><td>Surveyed By</td><td><input id="site_by"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Technical Details -->
+      <div class="panel" data-tab="Technical Details">
+        <table>
+          <thead><tr><th>Field</th><th>Information</th></tr></thead>
+          <tbody>
+            <tr><td>System Capacity (kW)</td><td><input id="tech_capacity"></td></tr>
+            <tr>
+              <td>System Type (On-grid/Off-grid/Hybrid)</td>
+              <td>
+                <select id="tech_type">
+                  <option value="">Select system type</option>
+                  <option>On-grid</option>
+                  <option>Off-grid</option>
+                  <option>Hybrid</option>
+                </select>
+              </td>
+            </tr>
+            <tr><td>Panel Brand</td><td><input id="tech_panel_brand"></td></tr>
+            <tr><td>Panel Wattage</td><td><input id="tech_panel_watt"></td></tr>
+            <tr><td>Number of Panels</td><td><input id="tech_panel_qty"></td></tr>
+            <tr><td>Panel Technology</td><td><input id="tech_panel_tech"></td></tr>
+            <tr><td>String Configuration</td><td><input id="tech_string"></td></tr>
+            <tr><td>Inverter Brand</td><td><input id="tech_inv_brand"></td></tr>
+            <tr><td>Inverter Model</td><td><input id="tech_inv_model"></td></tr>
+            <tr><td>Inverter Capacity</td><td><input id="tech_inv_capacity"></td></tr>
+            <tr><td>MPPT Quantity</td><td><input id="tech_mppt"></td></tr>
+            <tr><td>WiFi Monitoring</td><td><input id="tech_wifi"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Cable Details -->
+      <div class="panel" data-tab="Cable Details">
+        <table>
+          <thead><tr><th>Cable Type</th><th>Size (sqmm)</th><th>Length (m)</th><th>Remarks</th></tr></thead>
+          <tbody>
+            <tr><td>DC Cable (Panel to DCDB)</td><td><input id="cable_dcdb_size"></td><td><input id="cable_dcdb_len"></td><td><input id="cable_dcdb_remark"></td></tr>
+            <tr><td>DC Cable (DCDB to Inverter)</td><td><input id="cable_inv_size"></td><td><input id="cable_inv_len"></td><td><input id="cable_inv_remark"></td></tr>
+            <tr><td>AC Cable (Inverter to ACDB)</td><td><input id="cable_acdb_size"></td><td><input id="cable_acdb_len"></td><td><input id="cable_acdb_remark"></td></tr>
+            <tr><td>AC Cable (ACDB to Main Panel)</td><td><input id="cable_main_size"></td><td><input id="cable_main_len"></td><td><input id="cable_main_remark"></td></tr>
+            <tr><td>Earthing Cable</td><td><input id="cable_earthing_size"></td><td><input id="cable_earthing_len"></td><td><input id="cable_earthing_remark"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Structure Details -->
+      <div class="panel" data-tab="Structure Details">
+        <table>
+          <thead><tr><th>Field</th><th>Information</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Structure Type (HDGI/Aluminium)</td>
+              <td>
+                <select id="struct_type">
+                  <option value="">Select structure type</option>
+                  <option>HDGI</option>
+                  <option>Aluminium</option>
+                </select>
+              </td>
+            </tr>
+            <tr><td>Tilt Angle</td><td><input id="struct_tilt"></td></tr>
+            <tr><td>Structure Front Height (in mm)</td><td><input id="struct_front_h"></td></tr>
+            <tr><td>Structure Back Height (in mm)</td><td><input id="struct_back_h"></td></tr>
+            <tr><td>Structure Length (F-to-F or B-to-B) (in mm)</td><td><input id="struct_len"></td></tr>
+            <tr><td>Structure Width (F-to-B or B-to-F) (in mm)</td><td><input id="struct_width"></td></tr>
+            <tr><td>Foundation Type</td><td><input id="struct_found"></td></tr>
+            <tr><td>Number of Rows</td><td><input id="struct_rows"></td></tr>
+            <tr><td>Panels per Row</td><td><input id="struct_panels_row"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- BOQ -->
+      <div class="panel" data-tab="BOQ">
+        <table>
+          <thead><tr><th>Item</th><th>Specification</th><th>Quantity</th><th>Unit</th><th>Remarks</th></tr></thead>
+          <tbody>
+            <tr><td>Solar Panels</td><td><input id="boq_panels_spec"></td><td><input id="boq_panels_qty"></td><td><input id="boq_panels_unit"></td><td><input id="boq_panels_remark"></td></tr>
+            <tr><td>Solar Inverter</td><td><input id="boq_inverter_spec"></td><td><input id="boq_inverter_qty"></td><td><input id="boq_inverter_unit"></td><td><input id="boq_inverter_remark"></td></tr>
+            <tr><td>DCDB</td><td><input id="boq_dcdb_spec"></td><td><input id="boq_dcdb_qty"></td><td><input id="boq_dcdb_unit"></td><td><input id="boq_dcdb_remark"></td></tr>
+            <tr><td>ACDB</td><td><input id="boq_acdb_spec"></td><td><input id="boq_acdb_qty"></td><td><input id="boq_acdb_unit"></td><td><input id="boq_acdb_remark"></td></tr>
+            <tr><td>DC Cable</td><td><input id="boq_dc_cable_spec"></td><td><input id="boq_dc_cable_qty"></td><td><input id="boq_dc_cable_unit"></td><td><input id="boq_dc_cable_remark"></td></tr>
+            <tr><td>AC Cable</td><td><input id="boq_ac_cable_spec"></td><td><input id="boq_ac_cable_qty"></td><td><input id="boq_ac_cable_unit"></td><td><input id="boq_ac_cable_remark"></td></tr>
+            <tr><td>Earthing Kit</td><td><input id="boq_earthing_spec"></td><td><input id="boq_earthing_qty"></td><td><input id="boq_earthing_unit"></td><td><input id="boq_earthing_remark"></td></tr>
+            <tr><td>Lightning Arrestor</td><td><input id="boq_lightning_spec"></td><td><input id="boq_lightning_qty"></td><td><input id="boq_lightning_unit"></td><td><input id="boq_lightning_remark"></td></tr>
+            <tr><td>GI Mounting Structure</td><td><input id="boq_gi_spec"></td><td><input id="boq_gi_qty"></td><td><input id="boq_gi_unit"></td><td><input id="boq_gi_remark"></td></tr>
+            <tr><td>Installation Charges</td><td><input id="boq_install_spec"></td><td><input id="boq_install_qty"></td><td><input id="boq_install_unit"></td><td><input id="boq_install_remark"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnExport">Export to Excel</button>
+    </div>
+
+    <!-- Calculator + History -->
+    <div class="calc-center">
+      <div class="calc-wrap">
+        <div class="calculator">
+          <h3>Quick Calculator</h3>
+          <div class="calc-row"><input id="calc-display" readonly placeholder="0"></div>
+          <div class="calc-grid">
+            <button type="button" onclick="calcInput('7')">7</button>
+            <button type="button" onclick="calcInput('8')">8</button>
+            <button type="button" onclick="calcInput('9')">9</button>
+            <button type="button" class="calc-op" onclick="calcInput('/')">&divide;</button>
+            <button type="button" onclick="calcInput('4')">4</button>
+            <button type="button" onclick="calcInput('5')">5</button>
+            <button type="button" onclick="calcInput('6')">6</button>
+            <button type="button" class="calc-op" onclick="calcInput('*')">&times;</button>
+            <button type="button" onclick="calcInput('1')">1</button>
+            <button type="button" onclick="calcInput('2')">2</button>
+            <button type="button" onclick="calcInput('3')">3</button>
+            <button type="button" class="calc-op" onclick="calcInput('-')">&minus;</button>
+            <button type="button" onclick="calcInput('0')">0</button>
+            <button type="button" onclick="calcInput('.')">.</button>
+            <button type="button" class="calc-fn" onclick="calcClear()">AC</button>
+            <button type="button" class="calc-op" onclick="calcInput('+')">+</button>
+            <button type="button" class="calc-fn calc-back" onclick="calcBack()">⌫</button>
+            <button type="button" class="calc-eq" onclick="calcEval()">=</button>
+          </div>
+        </div>
+        <div class="calc-history">
+          <div class="hist-title">History</div>
+          <div id="calc-history-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    const tabNames = ["Customer Details","Site Survey","Technical Details","Cable Details","Structure Details","BOQ"];
+    const tabs = document.getElementById('tabs');
+    tabNames.forEach((name,i) => {
+      const t = document.createElement('div');
+      t.className = 'tab' + (i===0?' active':'');
+      t.textContent = name;
+      t.onclick = () => activate(name);
+      tabs.appendChild(t);
+    });
+
+    function activate(name){
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.textContent===name));
+      document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.tab===name));
+    }
+
+    function getFormData() {
+      return {
+        customer: {
+          name: cust_name.value,
+          fatherCompany: cust_father_company.value,
+          mobile: cust_mobile.value,
+          altMobile: cust_alt_mobile.value,
+          email: cust_email.value,
+          panAadhaar: cust_pan_aadhaar.value,
+          gst: cust_gst.value,
+          type: cust_type.value,
+          addr1: cust_addr1.value,
+          addr2: cust_addr2.value,
+          city: cust_city.value,
+          state: cust_state.value,
+          pin: cust_pin.value,
+          bank: cust_bank.value,
+          acc: cust_acc.value,
+          ifsc: cust_ifsc.value,
+          upi: cust_upi.value,
+          passbook: (cust_passbook.files[0] || {}).name || ""
+        },
+        site: {
+          address: site_address.value,
+          landmark: site_landmark.value,
+          roofType: site_roof_type.value,
+          roofHeight: site_roof_height.value,
+          roofArea: site_roof_area.value,
+          roofDirection: site_roof_direction.value,
+          shadow: site_shadow.value,
+          transformer: site_transformer.value,
+          discom: site_discom.value,
+          meter: site_meter.value,
+          load: site_load.value,
+          bill: site_bill.value,
+          existingSolar: site_existing_solar.value,
+          date: site_date.value,
+          surveyedBy: site_by.value
+        },
+        technical: {
+          capacity: tech_capacity.value,
+          type: tech_type.value,
+          panelBrand: tech_panel_brand.value,
+          panelWatt: tech_panel_watt.value,
+          panelQty: tech_panel_qty.value,
+          panelTech: tech_panel_tech.value,
+          stringConfig: tech_string.value,
+          invBrand: tech_inv_brand.value,
+          invModel: tech_inv_model.value,
+          invCapacity: tech_inv_capacity.value,
+          mppt: tech_mppt.value,
+          wifi: tech_wifi.value
+        },
+        cable: {
+          dcdb: { size: cable_dcdb_size.value, len: cable_dcdb_len.value, remark: cable_dcdb_remark.value },
+          inv: { size: cable_inv_size.value, len: cable_inv_len.value, remark: cable_inv_remark.value },
+          acdb: { size: cable_acdb_size.value, len: cable_acdb_len.value, remark: cable_acdb_remark.value },
+          main: { size: cable_main_size.value, len: cable_main_len.value, remark: cable_main_remark.value },
+          earthing: { size: cable_earthing_size.value, len: cable_earthing_len.value, remark: cable_earthing_remark.value }
+        },
+        structure: {
+          type: struct_type.value,
+          tilt: struct_tilt.value,
+          frontH: struct_front_h.value,
+          backH: struct_back_h.value,
+          len: struct_len.value,
+          width: struct_width.value,
+          foundation: struct_found.value,
+          rows: struct_rows.value,
+          panelsRow: struct_panels_row.value
+        },
+        boq: {
+          panels: { spec: boq_panels_spec.value, qty: boq_panels_qty.value, unit: boq_panels_unit.value, remark: boq_panels_remark.value },
+          inverter: { spec: boq_inverter_spec.value, qty: boq_inverter_qty.value, unit: boq_inverter_unit.value, remark: boq_inverter_remark.value },
+          dcdb: { spec: boq_dcdb_spec.value, qty: boq_dcdb_qty.value, unit: boq_dcdb_unit.value, remark: boq_dcdb_remark.value },
+          acdb: { spec: boq_acdb_spec.value, qty: boq_acdb_qty.value, unit: boq_acdb_unit.value, remark: boq_acdb_remark.value },
+          dcCable: { spec: boq_dc_cable_spec.value, qty: boq_dc_cable_qty.value, unit: boq_dc_cable_unit.value, remark: boq_dc_cable_remark.value },
+          acCable: { spec: boq_ac_cable_spec.value, qty: boq_ac_cable_qty.value, unit: boq_ac_cable_unit.value, remark: boq_ac_cable_remark.value },
+          earthing: { spec: boq_earthing_spec.value, qty: boq_earthing_qty.value, unit: boq_earthing_unit.value, remark: boq_earthing_remark.value },
+          lightning: { spec: boq_lightning_spec.value, qty: boq_lightning_qty.value, unit: boq_lightning_unit.value, remark: boq_lightning_remark.value },
+          gi: { spec: boq_gi_spec.value, qty: boq_gi_qty.value, unit: boq_gi_unit.value, remark: boq_gi_remark.value },
+          install: { spec: boq_install_spec.value, qty: boq_install_qty.value, unit: boq_install_unit.value, remark: boq_install_remark.value }
+        }
+      };
+    }
+
+    function setFormData(data) {
+      if (!data) return;
+      const c = data.customer || {};
+      const s = data.site || {};
+      const t = data.technical || {};
+      const st = data.structure || {};
+      const cb = data.cable || {};
+      const b = data.boq || {};
+
+      cust_name.value = c.name || '';
+      cust_father_company.value = c.fatherCompany || '';
+      cust_mobile.value = c.mobile || '';
+      cust_alt_mobile.value = c.altMobile || '';
+      cust_email.value = c.email || '';
+      cust_pan_aadhaar.value = c.panAadhaar || '';
+      cust_gst.value = c.gst || '';
+      cust_type.value = c.type || '';
+      cust_addr1.value = c.addr1 || '';
+      cust_addr2.value = c.addr2 || '';
+      cust_city.value = c.city || '';
+      cust_state.value = c.state || '';
+      cust_pin.value = c.pin || '';
+      cust_bank.value = c.bank || '';
+      cust_acc.value = c.acc || '';
+      cust_ifsc.value = c.ifsc || '';
+      cust_upi.value = c.upi || '';
+
+      site_address.value = s.address || '';
+      site_landmark.value = s.landmark || '';
+      site_roof_type.value = s.roofType || '';
+      site_roof_height.value = s.roofHeight || '';
+      site_roof_area.value = s.roofArea || '';
+      site_roof_direction.value = s.roofDirection || '';
+      site_shadow.value = s.shadow || '';
+      site_transformer.value = s.transformer || '';
+      site_discom.value = s.discom || '';
+      site_meter.value = s.meter || '';
+      site_load.value = s.load || '';
+      site_bill.value = s.bill || '';
+      site_existing_solar.value = s.existingSolar || '';
+      site_date.value = s.date || '';
+      site_by.value = s.surveyedBy || '';
+
+      tech_capacity.value = t.capacity || '';
+      tech_type.value = t.type || '';
+      tech_panel_brand.value = t.panelBrand || '';
+      tech_panel_watt.value = t.panelWatt || '';
+      tech_panel_qty.value = t.panelQty || '';
+      tech_panel_tech.value = t.panelTech || '';
+      tech_string.value = t.stringConfig || '';
+      tech_inv_brand.value = t.invBrand || '';
+      tech_inv_model.value = t.invModel || '';
+      tech_inv_capacity.value = t.invCapacity || '';
+      tech_mppt.value = t.mppt || '';
+      tech_wifi.value = t.wifi || '';
+
+      struct_type.value = st.type || '';
+      struct_tilt.value = st.tilt || '';
+      struct_front_h.value = st.frontH || '';
+      struct_back_h.value = st.backH || '';
+      struct_len.value = st.len || '';
+      struct_width.value = st.width || '';
+      struct_found.value = st.foundation || '';
+      struct_rows.value = st.rows || '';
+      struct_panels_row.value = st.panelsRow || '';
+
+      cable_dcdb_size.value = (cb.dcdb || {}).size || '';
+      cable_dcdb_len.value = (cb.dcdb || {}).len || '';
+      cable_dcdb_remark.value = (cb.dcdb || {}).remark || '';
+      cable_inv_size.value = (cb.inv || {}).size || '';
+      cable_inv_len.value = (cb.inv || {}).len || '';
+      cable_inv_remark.value = (cb.inv || {}).remark || '';
+      cable_acdb_size.value = (cb.acdb || {}).size || '';
+      cable_acdb_len.value = (cb.acdb || {}).len || '';
+      cable_acdb_remark.value = (cb.acdb || {}).remark || '';
+      cable_main_size.value = (cb.main || {}).size || '';
+      cable_main_len.value = (cb.main || {}).len || '';
+      cable_main_remark.value = (cb.main || {}).remark || '';
+      cable_earthing_size.value = (cb.earthing || {}).size || '';
+      cable_earthing_len.value = (cb.earthing || {}).len || '';
+      cable_earthing_remark.value = (cb.earthing || {}).remark || '';
+
+      boq_panels_spec.value = (b.panels || {}).spec || '';
+      boq_panels_qty.value = (b.panels || {}).qty || '';
+      boq_panels_unit.value = (b.panels || {}).unit || '';
+      boq_panels_remark.value = (b.panels || {}).remark || '';
+      boq_inverter_spec.value = (b.inverter || {}).spec || '';
+      boq_inverter_qty.value = (b.inverter || {}).qty || '';
+      boq_inverter_unit.value = (b.inverter || {}).unit || '';
+      boq_inverter_remark.value = (b.inverter || {}).remark || '';
+      boq_dcdb_spec.value = (b.dcdb || {}).spec || '';
+      boq_dcdb_qty.value = (b.dcdb || {}).qty || '';
+      boq_dcdb_unit.value = (b.dcdb || {}).unit || '';
+      boq_dcdb_remark.value = (b.dcdb || {}).remark || '';
+      boq_acdb_spec.value = (b.acdb || {}).spec || '';
+      boq_acdb_qty.value = (b.acdb || {}).qty || '';
+      boq_acdb_unit.value = (b.acdb || {}).unit || '';
+      boq_acdb_remark.value = (b.acdb || {}).remark || '';
+      boq_dc_cable_spec.value = (b.dcCable || {}).spec || '';
+      boq_dc_cable_qty.value = (b.dcCable || {}).qty || '';
+      boq_dc_cable_unit.value = (b.dcCable || {}).unit || '';
+      boq_dc_cable_remark.value = (b.dcCable || {}).remark || '';
+      boq_ac_cable_spec.value = (b.acCable || {}).spec || '';
+      boq_ac_cable_qty.value = (b.acCable || {}).qty || '';
+      boq_ac_cable_unit.value = (b.acCable || {}).unit || '';
+      boq_ac_cable_remark.value = (b.acCable || {}).remark || '';
+      boq_earthing_spec.value = (b.earthing || {}).spec || '';
+      boq_earthing_qty.value = (b.earthing || {}).qty || '';
+      boq_earthing_unit.value = (b.earthing || {}).unit || '';
+      boq_earthing_remark.value = (b.earthing || {}).remark || '';
+      boq_lightning_spec.value = (b.lightning || {}).spec || '';
+      boq_lightning_qty.value = (b.lightning || {}).qty || '';
+      boq_lightning_unit.value = (b.lightning || {}).unit || '';
+      boq_lightning_remark.value = (b.lightning || {}).remark || '';
+      boq_gi_spec.value = (b.gi || {}).spec || '';
+      boq_gi_qty.value = (b.gi || {}).qty || '';
+      boq_gi_unit.value = (b.gi || {}).unit || '';
+      boq_gi_remark.value = (b.gi || {}).remark || '';
+      boq_install_spec.value = (b.install || {}).spec || '';
+      boq_install_qty.value = (b.install || {}).qty || '';
+      boq_install_unit.value = (b.install || {}).unit || '';
+      boq_install_remark.value = (b.install || {}).remark || '';
+    }
+
+    function makeKey() {
+      const name = cust_name.value.trim();
+      const mobile = cust_mobile.value.trim();
+      if (!name) return "";
+      return mobile ? `${name} | ${mobile}` : name;
+    }
+
+    function setControlsState() {
+      const isExisting = document.querySelector('input[name="custType"]:checked').value === 'existing';
+      const list = document.getElementById("existingList");
+      const hasItems = list.options.length > 1;
+      list.disabled = !isExisting;
+      document.getElementById("btnLoad").disabled = !isExisting || !hasItems || !list.value;
+      document.getElementById("btnDeleteLocal").disabled = !isExisting || !hasItems || !list.value;
+    }
+
+    function saveLocal(silent=false) {
+      const key = makeKey();
+      if (!key) { if (!silent) alert("Customer Name required"); return; }
+      const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+      all[key] = getFormData();
+      localStorage.setItem("solar_customers", JSON.stringify(all));
+      loadCustomerList(key);
+      if (!silent) alert("Saved locally");
+    }
+
+    function deleteLocal() {
+      const list = document.getElementById("existingList");
+      const key = list.value || makeKey();
+      if (!key) { alert("Customer Name required"); return; }
+      const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+      if (!all[key]) { alert("Customer not found"); return; }
+      if (!confirm(`Delete ${key}? This cannot be undone.`)) return;
+      delete all[key];
+      localStorage.setItem("solar_customers", JSON.stringify(all));
+      loadCustomerList();
+      alert("Deleted");
+    }
+
+    function loadCustomerList(selectKey="") {
+      const list = document.getElementById("existingList");
+      list.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select customer";
+      list.appendChild(placeholder);
+
+      const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+      Object.keys(all).sort().forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key; opt.textContent = key;
+        list.appendChild(opt);
+      });
+      if (selectKey) list.value = selectKey;
+      setControlsState();
+    }
+
+    function loadSelected() {
+      const key = document.getElementById("existingList").value;
+      if (!key) return;
+      const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+      if (!all[key]) { alert("Customer not found"); return; }
+      setFormData(all[key]);
+    }
+
+    document.getElementById("btnSaveLocal").onclick = () => saveLocal(false);
+    document.getElementById("btnDeleteLocal").onclick = deleteLocal;
+    document.getElementById("btnLoad").onclick = loadSelected;
+    document.getElementById("existingList").addEventListener("change", setControlsState);
+
+    document.querySelectorAll('input[name="custType"]').forEach(r => {
+      r.addEventListener('change', () => {
+        setControlsState();
+      });
+    });
+
+    // Auto-save every 15 seconds
+    setInterval(() => {
+      const name = cust_name.value.trim();
+      if (!name) return;
+      saveLocal(true);
+    }, 15000);
+
+    // Export Excel
+    function exportExcel() {
+      const wb = XLSX.utils.book_new();
+      const d = getFormData();
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ["Field","Information"],
+        ["Customer Name", d.customer.name],
+        ["Father/Company Name", d.customer.fatherCompany],
+        ["Mobile Number", d.customer.mobile],
+        ["Alternate Mobile", d.customer.altMobile],
+        ["Email", d.customer.email],
+        ["PAN / Aadhaar", d.customer.panAadhaar],
+        ["GST Number", d.customer.gst],
+        ["Customer Type (Residential/Commercial/Industrial)", d.customer.type],
+        ["Address Line 1", d.customer.addr1],
+        ["Address Line 2", d.customer.addr2],
+        ["City", d.customer.city],
+        ["State", d.customer.state],
+        ["PIN Code", d.customer.pin],
+        ["Bank Name", d.customer.bank],
+        ["Account Number", d.customer.acc],
+        ["IFSC Code", d.customer.ifsc],
+        ["UPI ID", d.customer.upi],
+        ["Passbook Photo", d.customer.passbook]
+      ]), "Customer Details");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ["Field","Information"],
+        ["Installation Address", d.site.address],
+        ["Landmark", d.site.landmark],
+        ["Roof Type (RCC/Tin/Ground)", d.site.roofType],
+        ["Roof Height (ft)", d.site.roofHeight],
+        ["Available Roof Area (sqft)", d.site.roofArea],
+        ["Roof Direction", d.site.roofDirection],
+        ["Shadow Issue (Yes/No)", d.site.shadow],
+        ["Nearest Transformer Distance", d.site.transformer],
+        ["DISCOM Name", d.site.discom],
+        ["Existing Meter Type", d.site.meter],
+        ["Sanctioned Load (kW)", d.site.load],
+        ["Average Monthly Bill", d.site.bill],
+        ["Existing Solar Installed", d.site.existingSolar],
+        ["Survey Date", d.site.date],
+        ["Surveyed By", d.site.surveyedBy]
+      ]), "Site Survey");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ["Field","Information"],
+        ["System Capacity (kW)", d.technical.capacity],
+        ["System Type (On-grid/Off-grid/Hybrid)", d.technical.type],
+        ["Panel Brand", d.technical.panelBrand],
+        ["Panel Wattage", d.technical.panelWatt],
+        ["Number of Panels", d.technical.panelQty],
+        ["Panel Technology", d.technical.panelTech],
+        ["String Configuration", d.technical.stringConfig],
+        ["Inverter Brand", d.technical.invBrand],
+        ["Inverter Model", d.technical.invModel],
+        ["Inverter Capacity", d.technical.invCapacity],
+        ["MPPT Quantity", d.technical.mppt],
+        ["WiFi Monitoring", d.technical.wifi]
+      ]), "Technical Details");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ["Cable Type","Size (sqmm)","Length (m)","Remarks"],
+        ["DC Cable (Panel to DCDB)", d.cable.dcdb.size, d.cable.dcdb.len, d.cable.dcdb.remark],
+        ["DC Cable (DCDB to Inverter)", d.cable.inv.size, d.cable.inv.len, d.cable.inv.remark],
+        ["AC Cable (Inverter to ACDB)", d.cable.acdb.size, d.cable.acdb.len, d.cable.acdb.remark],
+        ["AC Cable (ACDB to Main Panel)", d.cable.main.size, d.cable.main.len, d.cable.main.remark],
+        ["Earthing Cable", d.cable.earthing.size, d.cable.earthing.len, d.cable.earthing.remark]
+      ]), "Cable Details");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ["Field","Information"],
+        ["Structure Type (HDGI/Aluminium)", d.structure.type],
+        ["Tilt Angle", d.structure.tilt],
+        ["Structure Front Height (in mm)", d.structure.frontH],
+        ["Structure Back Height (in mm)", d.structure.backH],
+        ["Structure Length (F-to-F or B-to-B) (in mm)", d.structure.len],
+        ["Structure Width (F-to-B or B-to-F) (in mm)", d.structure.width],
+        ["Foundation Type", d.structure.foundation],
+        ["Number of Rows", d.structure.rows],
+        ["Panels per Row", d.structure.panelsRow]
+      ]), "Structure Details");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ["Item","Specification","Quantity","Unit","Remarks"],
+        ["Solar Panels", d.boq.panels.spec, d.boq.panels.qty, d.boq.panels.unit, d.boq.panels.remark],
+        ["Solar Inverter", d.boq.inverter.spec, d.boq.inverter.qty, d.boq.inverter.unit, d.boq.inverter.remark],
+        ["DCDB", d.boq.dcdb.spec, d.boq.dcdb.qty, d.boq.dcdb.unit, d.boq.dcdb.remark],
+        ["ACDB", d.boq.acdb.spec, d.boq.acdb.qty, d.boq.acdb.unit, d.boq.acdb.remark],
+        ["DC Cable", d.boq.dcCable.spec, d.boq.dcCable.qty, d.boq.dcCable.unit, d.boq.dcCable.remark],
+        ["AC Cable", d.boq.acCable.spec, d.boq.acCable.qty, d.boq.acCable.unit, d.boq.acCable.remark],
+        ["Earthing Kit", d.boq.earthing.spec, d.boq.earthing.qty, d.boq.earthing.unit, d.boq.earthing.remark],
+        ["Lightning Arrestor", d.boq.lightning.spec, d.boq.lightning.qty, d.boq.lightning.unit, d.boq.lightning.remark],
+        ["GI Mounting Structure", d.boq.gi.spec, d.boq.gi.qty, d.boq.gi.unit, d.boq.gi.remark],
+        ["Installation Charges", d.boq.install.spec, d.boq.install.qty, d.boq.install.unit, d.boq.install.remark]
+      ]), "BOQ");
+
+      const filename = (d.customer.name || "solar-site-survey") + ".xlsx";
+      XLSX.writeFile(wb, filename);
+    }
+    document.getElementById("btnExport").onclick = exportExcel;
+
+    // Calculator with history
+    let justCalculated = false;
+    function formatIndian(numStr) {
+      if (numStr === '' || numStr === '-' || numStr === '.') return numStr;
+      let s = String(numStr);
+      let sign = '';
+      if (s[0] === '-') { sign = '-'; s = s.slice(1); }
+      const parts = s.split('.');
+      const trailingDot = s.endsWith('.');
+      let intPart = parts[0].replace(/^0+(?=\d)/, '') || '0';
+      const decPart = parts[1] !== undefined ? parts[1] : '';
+      if (intPart.length > 3) {
+        const last3 = intPart.slice(-3);
+        let head = intPart.slice(0, -3);
+        head = head.replace(/\B(?=(\d{2})+(?!\d))/g, ",");
+        intPart = head + "," + last3;
+      }
+      if (decPart) return sign + intPart + "." + decPart;
+      if (trailingDot) return sign + intPart + ".";
+      return sign + intPart;
+    }
+
+    function maybeFormatDisplay(raw) {
+      const isNumberOnly = /^-?\d*\.?\d*$/.test(raw);
+      if (!isNumberOnly) return raw;
+      return formatIndian(raw);
+    }
+
+    function calcInput(val) {
+      const display = document.getElementById('calc-display');
+      let raw = display.value.replace(/,/g, '');
+      if (justCalculated && /[0-9.]/.test(val)) { raw = ''; justCalculated = false; }
+      if (justCalculated && /[+\-*/]/.test(val)) { justCalculated = false; }
+      raw += val;
+      display.value = maybeFormatDisplay(raw);
+    }
+    function calcClear() { document.getElementById('calc-display').value = ''; justCalculated = false; }
+    function calcBack() {
+      const display = document.getElementById('calc-display');
+      let raw = display.value.replace(/,/g, '');
+      raw = raw.slice(0, -1);
+      display.value = maybeFormatDisplay(raw);
+      justCalculated = false;
+    }
+    function calcEval() {
+      const display = document.getElementById('calc-display');
+      const expr = display.value.replace(/,/g, '');
+      try {
+        const result = Function('"use strict";return (' + expr + ')')();
+        const formatted = formatIndian(String(result));
+        display.value = formatted;
+        justCalculated = true;
+        const hist = document.getElementById('calc-history-list');
+        const line = document.createElement('div');
+        const exprFormatted = expr.replace(/-?\d*\.?\d+/g, (m) => formatIndian(m));
+        line.textContent = `${exprFormatted} = ${formatted}`;
+        hist.prepend(line);
+      } catch { display.value = 'Error'; justCalculated = true; }
+    }
+
+    function syncCalcHeights() {
+      const calc = document.querySelector('.calculator');
+      const hist = document.querySelector('.calc-history');
+      if (!calc || !hist) return;
+      hist.style.height = calc.offsetHeight + 'px';
+    }
+
+    loadCustomerList();
+    syncCalcHeights();
+    window.addEventListener('resize', syncCalcHeights);
+  </script>
+</body>
+</html>
