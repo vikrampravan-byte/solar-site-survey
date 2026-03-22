@@ -124,7 +124,38 @@
       from{ opacity:0; transform: translateY(8px); }
       to{ opacity:1; transform: translateY(0); }
     }
-  </style>
+      /* Mobile-first readability tweaks */
+    body{ font-size:16px; }
+    th, td{ font-size:15px; }
+    td input, td select, td textarea{ font-size:16px; padding:12px 10px; }
+    .tab{ font-size:15px; padding:10px 14px; }
+    .actions button{ font-size:16px; padding:12px 18px; }
+    .topbar label{ font-size:14px; }
+    .topbar input, .topbar select{ font-size:15px; padding:8px 10px; }
+
+    @media (max-width: 900px){
+      .wrap{ margin: 12px; padding:12px; }
+      .hero{ flex-direction:column; align-items:flex-start; gap:6px; }
+      .hero h2{ font-size:22px; }
+    }
+
+    @media (max-width: 700px){
+      body{ font-size:17px; }
+      .wrap{ margin: 8px; padding:10px; border-radius:12px; }
+      table{ display:block; }
+      thead{ display:none; }
+      tbody, tr, td, th{ display:block; width:100%; }
+      tr{ margin-bottom:10px; background:#fff7f1; border:1px solid #eadfd7; border-radius:12px; overflow:hidden; }
+      td{ border:none; border-bottom:1px dashed #eadfd7; }
+      td:first-child{ font-weight:600; color:var(--ink); background:#fff1e7; }
+      td:last-child{ border-bottom:none; }
+      td input, td select, td textarea{ font-size:17px; padding:14px 12px; }
+      .tabs{ gap:6px; }
+      .tab{ font-size:14px; padding:10px 12px; }
+      .actions{ justify-content:center; }
+      .calculator{ width:100%; }
+      .calc-history{ width:100%; max-width:none; }
+    }  </style>
 </head>
 <body>
   <div class="wrap">
@@ -293,6 +324,8 @@
             <tr><td>Structure Back Height (in mm)</td><td><input id="struct_back_h"></td></tr>
             <tr><td>Structure Length (F-to-F or B-to-B) (in mm)</td><td><input id="struct_len"></td></tr>
             <tr><td>Structure Width (F-to-B or B-to-F) (in mm)</td><td><input id="struct_width"></td></tr>
+            <tr><td>Base/Width Channel Unit Weight (kg/m) (C 80x40, 2mm)</td><td><input id="struct_bw_kgpm" value="2.1195" readonly></td></tr>
+            <tr><td>Length Channel Unit Weight (kg/m) (Slotted C 41x41, 2mm)</td><td><input id="struct_len_kgpm" value="1.2874" readonly></td></tr>
             <tr><td>Foundation Type</td><td><input id="struct_found"></td></tr>
             <tr><td>Number of Rows</td><td><input id="struct_rows"></td></tr>
             <tr><td>Panels per Row</td><td><input id="struct_panels_row"></td></tr>
@@ -443,6 +476,8 @@
           backH: struct_back_h.value,
           len: struct_len.value,
           width: struct_width.value,
+          bwKgpm: struct_bw_kgpm.value,
+          lenKgpm: struct_len_kgpm.value,
           foundation: struct_found.value,
           rows: struct_rows.value,
           panelsRow: struct_panels_row.value
@@ -524,9 +559,13 @@
       struct_back_h.value = st.backH || '';
       struct_len.value = st.len || '';
       struct_width.value = st.width || '';
+      struct_bw_kgpm.value = st.bwKgpm || '';
+      struct_len_kgpm.value = st.lenKgpm || '';
       struct_found.value = st.foundation || '';
       struct_rows.value = st.rows || '';
       struct_panels_row.value = st.panelsRow || '';
+
+      calcGiStructure();
 
       cable_dcdb_size.value = (cb.dcdb || {}).size || '';
       cable_dcdb_len.value = (cb.dcdb || {}).len || '';
@@ -747,7 +786,9 @@
         ["Structure Front Height (in mm)", d.structure.frontH],
         ["Structure Back Height (in mm)", d.structure.backH],
         ["Structure Length (F-to-F or B-to-B) (in mm)", d.structure.len],
-        ["Structure Width (F-to-B or B-to-F) (in mm)", d.structure.width],
+["Structure Width (F-to-B or B-to-F) (in mm)", d.structure.width],
+        ["Base/Width Channel Unit Weight (kg/m) (C 80x40, 2mm)", d.structure.bwKgpm],
+        ["Length Channel Unit Weight (kg/m) (Slotted C 41x41, 2mm)", d.structure.lenKgpm],
         ["Foundation Type", d.structure.foundation],
         ["Number of Rows", d.structure.rows],
         ["Panels per Row", d.structure.panelsRow]
@@ -770,7 +811,51 @@
       const filename = (d.customer.name || "solar-site-survey") + ".xlsx";
       XLSX.writeFile(wb, filename);
     }
-    document.getElementById("btnExport").onclick = exportExcel;
+    document.getElementById("btnExport").onclick = exportExcel;function numVal(v) {
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function calcGiStructure() {
+      const lenMm = numVal(struct_len.value);
+      const widthMm = numVal(struct_width.value);
+      const frontMm = numVal(struct_front_h.value);
+      const backMm = numVal(struct_back_h.value);
+      const rows = Math.max(0, Math.floor(numVal(struct_rows.value)));
+      const bwKgpm = numVal(struct_bw_kgpm.value);
+      const lenKgpm = numVal(struct_len_kgpm.value);
+
+      const hasAny = lenMm || widthMm || frontMm || backMm || rows || bwKgpm || lenKgpm;
+      if (!hasAny) return;
+
+      let baseCount = 0;
+      if (lenMm > 0 && lenMm <= 3700) baseCount = 2;
+      else if (lenMm > 3700) baseCount = 3;
+
+      const frontBaseCount = baseCount;
+      const backBaseCount = baseCount;
+      const widthChannelCount = baseCount;
+      const lengthChannelCount = rows * 2;
+
+      const baseLenM = (frontBaseCount * frontMm + backBaseCount * backMm) / 1000;
+      const widthLenM = (widthChannelCount * widthMm) / 1000;
+      const lengthLenM = (lengthChannelCount * lenMm) / 1000;
+
+      const weight = baseLenM * bwKgpm + widthLenM * bwKgpm + lengthLenM * lenKgpm;
+
+      boq_gi_unit.value = 'kg';
+      boq_gi_qty.value = weight > 0 ? weight.toFixed(2) : '';
+
+      const remark = `Auto: Base F${frontBaseCount}/B${backBaseCount}, Width ${widthChannelCount}, Length ${lengthChannelCount} (2/row); Lm ${baseLenM.toFixed(2)} + ${widthLenM.toFixed(2)} + ${lengthLenM.toFixed(2)}`;
+      if (!boq_gi_remark.value || boq_gi_remark.value.startsWith('Auto:')) {
+        boq_gi_remark.value = remark;
+      }
+    }
+
+    ['struct_front_h','struct_back_h','struct_len','struct_width','struct_rows','struct_bw_kgpm','struct_len_kgpm'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', calcGiStructure);
+    });
 
     // Calculator with history
     let justCalculated = false;
@@ -845,3 +930,7 @@
   </script>
 </body>
 </html>
+
+
+
+
