@@ -120,6 +120,38 @@
     }
     .hist-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; text-align:center; }
     #calc-history-list { font-size: 12px; line-height: 1.4; font-weight:700; }
+
+    /* Load Calculator */
+    .load-toolbar{
+      display:flex; align-items:stretch; gap:10px; flex-wrap:wrap;
+      margin: 8px 0 12px;
+    }
+    .mini-card{
+      flex: 1 1 220px;
+      border:1px solid #eadfd7;
+      background: linear-gradient(135deg, #fff7f1 0%, #fff2e8 100%);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    .mini-label{ font-size:12px; color: var(--muted); font-weight:600; }
+    .mini-value{ font-size:16px; color: var(--ink); font-weight:700; margin-top:4px; }
+    .mini-actions{
+      display:flex; gap:8px; align-items:center; flex: 1 1 260px; justify-content:flex-end;
+    }
+    .btn-ghost{
+      padding:10px 14px; border-radius:999px; cursor:pointer;
+      border:1px solid #eadfd7; background:#fff; font-weight:700; color:var(--ink);
+    }
+    .btn-ghost:hover{ transform: translateY(-1px); box-shadow:0 8px 18px rgba(31,22,15,0.08); }
+    .hint{ display:block; margin-top:8px; color: var(--muted); font-weight:500; }
+
+    .actions .btn-outline{
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid #eadfd7;
+      box-shadow: 0 10px 22px rgba(31,22,15,0.08);
+    }
+    .actions .btn-outline:hover{ transform: translateY(-1px); }
     @keyframes fadeUp{
       from{ opacity:0; transform: translateY(8px); }
       to{ opacity:1; transform: translateY(0); }
@@ -259,6 +291,37 @@
         </table>
       </div>
 
+      <!-- Load Calculator -->
+      <div class="panel" data-tab="Load Calculator">
+        <div class="load-toolbar">
+          <div class="mini-card">
+            <div class="mini-label">Total Connected Load</div>
+            <div class="mini-value"><span id="load_total_w">0</span> W (<span id="load_total_kw">0.00</span> kW)</div>
+          </div>
+          <div class="mini-card">
+            <div class="mini-label">Daily Energy (approx)</div>
+            <div class="mini-value"><span id="load_total_kwh">0.00</span> kWh/day</div>
+          </div>
+          <div class="mini-actions">
+            <button type="button" id="btnLoadAddRow" class="btn-ghost">Add Row</button>
+            <button type="button" id="btnLoadCopyToSite" class="btn-ghost">Copy kW to Site Survey</button>
+          </div>
+        </div>
+
+        <table id="loadTable">
+          <thead>
+            <tr>
+              <th style="width:46%">Appliance / Load</th>
+              <th style="width:14%">Qty</th>
+              <th style="width:20%">Watt (W)</th>
+              <th style="width:20%">Hours/day</th>
+            </tr>
+          </thead>
+          <tbody id="loadTableBody"></tbody>
+        </table>
+        <small class="hint">Add items, fill Qty/Watt/Hours; totals update automatically. Use "Copy kW to Site Survey" to fill "Sanctioned Load (kW)".</small>
+      </div>
+
       <!-- Technical Details -->
       <div class="panel" data-tab="Technical Details">
         <table>
@@ -355,6 +418,7 @@
 
     <div class="actions">
       <button id="btnExport">Export to Excel</button>
+      <button id="btnExportPdf" type="button" class="btn-outline">Export to PDF</button>
     </div>
 
     <!-- Calculator + History -->
@@ -393,8 +457,10 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <script>
-    const tabNames = ["Customer Details","Site Survey","Technical Details","Cable Details","Structure Details","BOQ"];
+    const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","Structure Details","BOQ"];
     const tabs = document.getElementById('tabs');
     tabNames.forEach((name,i) => {
       const t = document.createElement('div');
@@ -409,7 +475,64 @@
       document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.tab===name));
     }
 
-    function getFormData() {
+
+    function format2(n) {
+      const v = Number(n);
+      return Number.isFinite(v) ? v.toFixed(2) : "0.00";
+    }
+
+    function loadRowTemplate(item={}) {
+      const tr = document.createElement("tr");
+      const esc = (s) => String(s ?? "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      tr.innerHTML = `
+        <td><input class="lc-name" placeholder="e.g. Fan" value="${esc(item.name)}"></td>
+        <td><input class="lc-qty" inputmode="decimal" value="${esc(item.qty)}"></td>
+        <td><input class="lc-watt" inputmode="decimal" value="${esc(item.watt)}"></td>
+        <td><input class="lc-hours" inputmode="decimal" value="${esc(item.hours)}"></td>
+      `;
+      tr.querySelectorAll("input").forEach(inp => inp.addEventListener("input", calcLoadTotals));
+      return tr;
+    }
+
+    function getLoadItems() {
+      const rows = Array.from(document.querySelectorAll("#loadTableBody tr"));
+      return rows.map(tr => ({
+        name: (tr.querySelector(".lc-name") || {}).value || "",
+        qty: (tr.querySelector(".lc-qty") || {}).value || "",
+        watt: (tr.querySelector(".lc-watt") || {}).value || "",
+        hours: (tr.querySelector(".lc-hours") || {}).value || ""
+      })).filter(r => (r.name || "").trim() || (r.qty || "").trim() || (r.watt || "").trim() || (r.hours || "").trim());
+    }
+
+    function setLoadItems(items) {
+      const body = document.getElementById("loadTableBody");
+      if (!body) return;
+      body.innerHTML = "";
+      const list = Array.isArray(items) ? items : [];
+      list.forEach(it => body.appendChild(loadRowTemplate(it)));
+      calcLoadTotals();
+    }
+
+    function calcLoadTotals() {
+      const rows = Array.from(document.querySelectorAll("#loadTableBody tr"));
+      let totalW = 0;
+      let totalKwh = 0;
+      rows.forEach(tr => {
+        const qty = numVal((tr.querySelector(".lc-qty") || {}).value);
+        const watt = numVal((tr.querySelector(".lc-watt") || {}).value);
+        const hours = numVal((tr.querySelector(".lc-hours") || {}).value);
+        const connected = qty * watt;
+        const dailyKwh = (connected * hours) / 1000;
+        totalW += connected;
+        totalKwh += dailyKwh;
+      });
+      const elW = document.getElementById("load_total_w");
+      const elKw = document.getElementById("load_total_kw");
+      const elKwh = document.getElementById("load_total_kwh");
+      if (elW) elW.textContent = String(Math.round(totalW));
+      if (elKw) elKw.textContent = format2(totalW / 1000);
+      if (elKwh) elKwh.textContent = format2(totalKwh);
+    }    function getFormData() {
       return {
         customer: {
           name: cust_name.value,
@@ -447,6 +570,9 @@
           existingSolar: site_existing_solar.value,
           date: site_date.value,
           surveyedBy: site_by.value
+        },
+        loadCalc: {
+          items: getLoadItems()
         },
         technical: {
           capacity: tech_capacity.value,
@@ -501,6 +627,7 @@
       if (!data) return;
       const c = data.customer || {};
       const s = data.site || {};
+      const lc = data.loadCalc || {};
       const t = data.technical || {};
       const st = data.structure || {};
       const cb = data.cable || {};
@@ -540,6 +667,8 @@
       site_date.value = s.date || '';
       site_by.value = s.surveyedBy || '';
 
+
+      setLoadItems((lc.items || []));
       tech_capacity.value = t.capacity || '';
       tech_type.value = t.type || '';
       tech_panel_brand.value = t.panelBrand || '';
@@ -706,116 +835,379 @@
       const name = cust_name.value.trim();
       if (!name) return;
       saveLocal(true);
-    }, 15000);
+    }, 15000);    // Export Excel
+    function makeSheetWithHeading(d, sectionName, colHeaders, bodyRows) {
+      const cols = colHeaders.length;
+      const customerLine = `Customer: ${d.customer.name || "-"}   |   Mobile: ${d.customer.mobile || "-"}`;
+      const dateLine = `Survey Date: ${d.site.date || "-"}   |   Generated: ${new Date().toLocaleString()}`;
+      const aoa = [
+        ["Solar Site Survey"],
+        [customerLine],
+        [`Section: ${sectionName}`],
+        [dateLine],
+        [],
+        colHeaders,
+        ...bodyRows
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: cols - 1 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: cols - 1 } },
+        { s: { r: 2, c: 0 }, e: { r: 2, c: cols - 1 } },
+        { s: { r: 3, c: 0 }, e: { r: 3, c: cols - 1 } }
+      ];
+      ws["!cols"] = colHeaders.map(h => ({ wch: Math.max(14, String(h).length + 2) }));
+      return ws;
+    }
 
-    // Export Excel
     function exportExcel() {
       const wb = XLSX.utils.book_new();
       const d = getFormData();
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Customer Details",
         ["Field","Information"],
-        ["Customer Name", d.customer.name],
-        ["Father/Company Name", d.customer.fatherCompany],
-        ["Mobile Number", d.customer.mobile],
-        ["Alternate Mobile", d.customer.altMobile],
-        ["Email", d.customer.email],
-        ["PAN / Aadhaar", d.customer.panAadhaar],
-        ["GST Number", d.customer.gst],
-        ["Customer Type (Residential/Commercial/Industrial)", d.customer.type],
-        ["Address Line 1", d.customer.addr1],
-        ["Address Line 2", d.customer.addr2],
-        ["City", d.customer.city],
-        ["State", d.customer.state],
-        ["PIN Code", d.customer.pin],
-        ["Bank Name", d.customer.bank],
-        ["Account Number", d.customer.acc],
-        ["IFSC Code", d.customer.ifsc],
-        ["UPI ID", d.customer.upi],
-        ["Passbook Photo", d.customer.passbook]
-      ]), "Customer Details");
+        [
+          ["Customer Name", d.customer.name],
+          ["Father/Company Name", d.customer.fatherCompany],
+          ["Mobile Number", d.customer.mobile],
+          ["Alternate Mobile", d.customer.altMobile],
+          ["Email", d.customer.email],
+          ["PAN / Aadhaar", d.customer.panAadhaar],
+          ["GST Number", d.customer.gst],
+          ["Customer Type (Residential/Commercial/Industrial)", d.customer.type],
+          ["Address Line 1", d.customer.addr1],
+          ["Address Line 2", d.customer.addr2],
+          ["City", d.customer.city],
+          ["State", d.customer.state],
+          ["PIN Code", d.customer.pin],
+          ["Bank Name", d.customer.bank],
+          ["Account Number", d.customer.acc],
+          ["IFSC Code", d.customer.ifsc],
+          ["UPI ID", d.customer.upi],
+          ["Passbook Photo", d.customer.passbook]
+        ]
+      ), "Customer Details");
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Site Survey",
         ["Field","Information"],
-        ["Installation Address", d.site.address],
-        ["Landmark", d.site.landmark],
-        ["Roof Type (RCC/Tin/Ground)", d.site.roofType],
-        ["Roof Height (ft)", d.site.roofHeight],
-        ["Available Roof Area (sqft)", d.site.roofArea],
-        ["Roof Direction", d.site.roofDirection],
-        ["Shadow Issue (Yes/No)", d.site.shadow],
-        ["Nearest Transformer Distance", d.site.transformer],
-        ["DISCOM Name", d.site.discom],
-        ["Existing Meter Type", d.site.meter],
-        ["Sanctioned Load (kW)", d.site.load],
-        ["Average Monthly Bill", d.site.bill],
-        ["Existing Solar Installed", d.site.existingSolar],
-        ["Survey Date", d.site.date],
-        ["Surveyed By", d.site.surveyedBy]
-      ]), "Site Survey");
+        [
+          ["Installation Address", d.site.address],
+          ["Landmark", d.site.landmark],
+          ["Roof Type (RCC/Tin/Ground)", d.site.roofType],
+          ["Roof Height (ft)", d.site.roofHeight],
+          ["Available Roof Area (sqft)", d.site.roofArea],
+          ["Roof Direction", d.site.roofDirection],
+          ["Shadow Issue (Yes/No)", d.site.shadow],
+          ["Nearest Transformer Distance", d.site.transformer],
+          ["DISCOM Name", d.site.discom],
+          ["Existing Meter Type", d.site.meter],
+          ["Sanctioned Load (kW)", d.site.load],
+          ["Average Monthly Bill", d.site.bill],
+          ["Existing Solar Installed", d.site.existingSolar],
+          ["Survey Date", d.site.date],
+          ["Surveyed By", d.site.surveyedBy]
+        ]
+      ), "Site Survey");
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      const loadItems = (d.loadCalc || {}).items || [];
+      const loadRows = loadItems.map(it => {
+        return [it.name || "", it.qty || "", it.watt || "", it.hours || ""]; 
+      });
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Load Calculator",
+        ["Appliance / Load","Qty","Watt (W)","Hours/day"],
+        loadRows
+      ), "Load Calculator");
+
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
         ["Field","Information"],
-        ["System Capacity (kW)", d.technical.capacity],
-        ["System Type (On-grid/Off-grid/Hybrid)", d.technical.type],
-        ["Panel Brand", d.technical.panelBrand],
-        ["Panel Wattage", d.technical.panelWatt],
-        ["Number of Panels", d.technical.panelQty],
-        ["Panel Technology", d.technical.panelTech],
-        ["String Configuration", d.technical.stringConfig],
-        ["Inverter Brand", d.technical.invBrand],
-        ["Inverter Model", d.technical.invModel],
-        ["Inverter Capacity", d.technical.invCapacity],
-        ["MPPT Quantity", d.technical.mppt],
-        ["WiFi Monitoring", d.technical.wifi]
-      ]), "Technical Details");
+        [
+          ["System Capacity (kW)", d.technical.capacity],
+          ["System Type (On-grid/Off-grid/Hybrid)", d.technical.type],
+          ["Panel Brand", d.technical.panelBrand],
+          ["Panel Wattage", d.technical.panelWatt],
+          ["Number of Panels", d.technical.panelQty],
+          ["Panel Technology", d.technical.panelTech],
+          ["String Configuration", d.technical.stringConfig],
+          ["Inverter Brand", d.technical.invBrand],
+          ["Inverter Model", d.technical.invModel],
+          ["Inverter Capacity", d.technical.invCapacity],
+          ["MPPT Quantity", d.technical.mppt],
+          ["WiFi Monitoring", d.technical.wifi]
+        ]
+      ), "Technical Details");
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Cable Details",
         ["Cable Type","Size (sqmm)","Length (m)","Remarks"],
-        ["DC Cable (Panel to DCDB)", d.cable.dcdb.size, d.cable.dcdb.len, d.cable.dcdb.remark],
-        ["DC Cable (DCDB to Inverter)", d.cable.inv.size, d.cable.inv.len, d.cable.inv.remark],
-        ["AC Cable (Inverter to ACDB)", d.cable.acdb.size, d.cable.acdb.len, d.cable.acdb.remark],
-        ["AC Cable (ACDB to Main Panel)", d.cable.main.size, d.cable.main.len, d.cable.main.remark],
-        ["Earthing Cable", d.cable.earthing.size, d.cable.earthing.len, d.cable.earthing.remark]
-      ]), "Cable Details");
+        [
+          ["DC Cable (Panel to DCDB)", d.cable.dcdb.size, d.cable.dcdb.len, d.cable.dcdb.remark],
+          ["DC Cable (DCDB to Inverter)", d.cable.inv.size, d.cable.inv.len, d.cable.inv.remark],
+          ["AC Cable (Inverter to ACDB)", d.cable.acdb.size, d.cable.acdb.len, d.cable.acdb.remark],
+          ["AC Cable (ACDB to Main Panel)", d.cable.main.size, d.cable.main.len, d.cable.main.remark],
+          ["Earthing Cable", d.cable.earthing.size, d.cable.earthing.len, d.cable.earthing.remark]
+        ]
+      ), "Cable Details");
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Structure Details",
         ["Field","Information"],
-        ["Structure Type (HDGI/Aluminium)", d.structure.type],
-        ["Tilt Angle", d.structure.tilt],
-        ["Structure Front Height (in mm)", d.structure.frontH],
-        ["Structure Back Height (in mm)", d.structure.backH],
-        ["Structure Length (F-to-F or B-to-B) (in mm)", d.structure.len],
-["Structure Width (F-to-B or B-to-F) (in mm)", d.structure.width],
-        ["Base/Width Channel Unit Weight (kg/m) (C 80x40, 2mm)", d.structure.bwKgpm],
-        ["Length Channel Unit Weight (kg/m) (Slotted C 41x41, 2mm)", d.structure.lenKgpm],
-        ["Foundation Type", d.structure.foundation],
-        ["Number of Rows", d.structure.rows],
-        ["Panels per Row", d.structure.panelsRow]
-      ]), "Structure Details");
+        [
+          ["Structure Type (HDGI/Aluminium)", d.structure.type],
+          ["Tilt Angle", d.structure.tilt],
+          ["Structure Front Height (in mm)", d.structure.frontH],
+          ["Structure Back Height (in mm)", d.structure.backH],
+          ["Structure Length (F-to-F or B-to-B) (in mm)", d.structure.len],
+          ["Structure Width (F-to-B or B-to-F) (in mm)", d.structure.width],
+          ["Base/Width Channel Unit Weight (kg/m) (C 80x40, 2mm)", d.structure.bwKgpm],
+          ["Length Channel Unit Weight (kg/m) (Slotted C 41x41, 2mm)", d.structure.lenKgpm],
+          ["Foundation Type", d.structure.foundation],
+          ["Number of Rows", d.structure.rows],
+          ["Panels per Row", d.structure.panelsRow]
+        ]
+      ), "Structure Details");
 
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "BOQ",
         ["Item","Specification","Quantity","Unit","Remarks"],
-        ["Solar Panels", d.boq.panels.spec, d.boq.panels.qty, d.boq.panels.unit, d.boq.panels.remark],
-        ["Solar Inverter", d.boq.inverter.spec, d.boq.inverter.qty, d.boq.inverter.unit, d.boq.inverter.remark],
-        ["DCDB", d.boq.dcdb.spec, d.boq.dcdb.qty, d.boq.dcdb.unit, d.boq.dcdb.remark],
-        ["ACDB", d.boq.acdb.spec, d.boq.acdb.qty, d.boq.acdb.unit, d.boq.acdb.remark],
-        ["DC Cable", d.boq.dcCable.spec, d.boq.dcCable.qty, d.boq.dcCable.unit, d.boq.dcCable.remark],
-        ["AC Cable", d.boq.acCable.spec, d.boq.acCable.qty, d.boq.acCable.unit, d.boq.acCable.remark],
-        ["Earthing Kit", d.boq.earthing.spec, d.boq.earthing.qty, d.boq.earthing.unit, d.boq.earthing.remark],
-        ["Lightning Arrestor", d.boq.lightning.spec, d.boq.lightning.qty, d.boq.lightning.unit, d.boq.lightning.remark],
-        ["GI Mounting Structure", d.boq.gi.spec, d.boq.gi.qty, d.boq.gi.unit, d.boq.gi.remark],
-        ["Installation Charges", d.boq.install.spec, d.boq.install.qty, d.boq.install.unit, d.boq.install.remark]
-      ]), "BOQ");
+        [
+          ["Solar Panels", d.boq.panels.spec, d.boq.panels.qty, d.boq.panels.unit, d.boq.panels.remark],
+          ["Solar Inverter", d.boq.inverter.spec, d.boq.inverter.qty, d.boq.inverter.unit, d.boq.inverter.remark],
+          ["DCDB", d.boq.dcdb.spec, d.boq.dcdb.qty, d.boq.dcdb.unit, d.boq.dcdb.remark],
+          ["ACDB", d.boq.acdb.spec, d.boq.acdb.qty, d.boq.acdb.unit, d.boq.acdb.remark],
+          ["DC Cable", d.boq.dcCable.spec, d.boq.dcCable.qty, d.boq.dcCable.unit, d.boq.dcCable.remark],
+          ["AC Cable", d.boq.acCable.spec, d.boq.acCable.qty, d.boq.acCable.unit, d.boq.acCable.remark],
+          ["Earthing Kit", d.boq.earthing.spec, d.boq.earthing.qty, d.boq.earthing.unit, d.boq.earthing.remark],
+          ["Lightning Arrestor", d.boq.lightning.spec, d.boq.lightning.qty, d.boq.lightning.unit, d.boq.lightning.remark],
+          ["GI Mounting Structure", d.boq.gi.spec, d.boq.gi.qty, d.boq.gi.unit, d.boq.gi.remark],
+          ["Installation Charges", d.boq.install.spec, d.boq.install.qty, d.boq.install.unit, d.boq.install.remark]
+        ]
+      ), "BOQ");
 
       const filename = (d.customer.name || "solar-site-survey") + ".xlsx";
       XLSX.writeFile(wb, filename);
     }
-    document.getElementById("btnExport").onclick = exportExcel;function numVal(v) {
+
+    // Export PDF (each tab as a page)
+    function exportPdf() {
+      const d = getFormData();
+      const { jsPDF } = window.jspdf || {};
+      if (!jsPDF) { alert("PDF library not loaded"); return; }
+
+      const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+
+      function drawHeader(sectionName) {
+        const w = doc.internal.pageSize.getWidth();
+        doc.setFillColor(240, 90, 40);
+        doc.rect(0, 0, w, 78, "F");
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Solar Site Survey", 40, 34);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text(sectionName, 40, 58);
+
+        doc.setTextColor(31, 22, 15);
+        doc.setFontSize(10);
+        const line1 = `Customer: ${d.customer.name || "-"}   |   Mobile: ${d.customer.mobile || "-"}`;
+        const line2 = `Survey Date: ${d.site.date || "-"}   |   Generated: ${new Date().toLocaleString()}`;
+        doc.text(line1, 40, 98);
+        doc.text(line2, 40, 114);
+      }
+
+      function addTable(sectionName, columns, rows, opts={}) {
+        drawHeader(sectionName);
+
+        let startY = 130;
+        if (opts && Array.isArray(opts.summaryLines) && opts.summaryLines.length) {
+          doc.setTextColor(31, 22, 15);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.text(String(opts.summaryLines[0] || ""), 40, 136);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          if (opts.summaryLines[1]) doc.text(String(opts.summaryLines[1]), 40, 152);
+          startY = 170;
+        }
+
+        doc.autoTable({
+          startY,
+          head: [columns],
+          body: rows,
+          theme: "grid",
+          styles: { font: "helvetica", fontSize: 9, cellPadding: 6, textColor: [31,22,15] },
+          headStyles: { fillColor: [139, 63, 16], textColor: [255,255,255] },
+          alternateRowStyles: { fillColor: [255, 247, 241] },
+          margin: { left: 40, right: 40 }
+        });
+      }
+
+      const loadItemsRaw = (((d.loadCalc || {}).items) || []);
+      let loadTotalW = 0;
+      let loadTotalKwh = 0;
+      loadItemsRaw.forEach(it => {
+        const qty = numVal(it.qty);
+        const watt = numVal(it.watt);
+        const hours = numVal(it.hours);
+        const connected = qty * watt;
+        loadTotalW += connected;
+        loadTotalKwh += (connected * hours) / 1000;
+      });
+      const loadSummaryLines = [
+        `Total Connected Load: ${Math.round(loadTotalW)} W (${format2(loadTotalW/1000)} kW)`,
+        `Daily Energy (approx): ${format2(loadTotalKwh)} kWh/day`
+      ];
+
+      const sections = [
+        {
+          name: "Customer Details",
+          columns: ["Field", "Information"],
+          rows: [
+            ["Customer Name", d.customer.name],
+            ["Father/Company Name", d.customer.fatherCompany],
+            ["Mobile Number", d.customer.mobile],
+            ["Alternate Mobile", d.customer.altMobile],
+            ["Email", d.customer.email],
+            ["PAN / Aadhaar", d.customer.panAadhaar],
+            ["GST Number", d.customer.gst],
+            ["Customer Type (Residential/Commercial/Industrial)", d.customer.type],
+            ["Address Line 1", d.customer.addr1],
+            ["Address Line 2", d.customer.addr2],
+            ["City", d.customer.city],
+            ["State", d.customer.state],
+            ["PIN Code", d.customer.pin],
+            ["Bank Name", d.customer.bank],
+            ["Account Number", d.customer.acc],
+            ["IFSC Code", d.customer.ifsc],
+            ["UPI ID", d.customer.upi],
+            ["Passbook Photo", d.customer.passbook]
+          ]
+        },
+        {
+          name: "Site Survey",
+          columns: ["Field", "Information"],
+          rows: [
+            ["Installation Address", d.site.address],
+            ["Landmark", d.site.landmark],
+            ["Roof Type (RCC/Tin/Ground)", d.site.roofType],
+            ["Roof Height (ft)", d.site.roofHeight],
+            ["Available Roof Area (sqft)", d.site.roofArea],
+            ["Roof Direction", d.site.roofDirection],
+            ["Shadow Issue (Yes/No)", d.site.shadow],
+            ["Nearest Transformer Distance", d.site.transformer],
+            ["DISCOM Name", d.site.discom],
+            ["Existing Meter Type", d.site.meter],
+            ["Sanctioned Load (kW)", d.site.load],
+            ["Average Monthly Bill", d.site.bill],
+            ["Existing Solar Installed", d.site.existingSolar],
+            ["Survey Date", d.site.date],
+            ["Surveyed By", d.site.surveyedBy]
+          ]
+        },
+        {
+          name: "Load Calculator",
+          summaryLines: loadSummaryLines,
+          columns: ["Appliance / Load","Qty","Watt (W)","Hours/day"],
+          rows: loadItemsRaw.map(it => {
+            const qty = numVal(it.qty);
+            const watt = numVal(it.watt);
+            const hours = numVal(it.hours);
+            const connected = qty * watt;
+            const dailyKwh = (connected * hours) / 1000;
+            return [it.name || "", it.qty || "", it.watt || "", it.hours || ""]; 
+          })
+        },
+        {
+          name: "Technical Details",
+          columns: ["Field", "Information"],
+          rows: [
+            ["System Capacity (kW)", d.technical.capacity],
+            ["System Type (On-grid/Off-grid/Hybrid)", d.technical.type],
+            ["Panel Brand", d.technical.panelBrand],
+            ["Panel Wattage", d.technical.panelWatt],
+            ["Number of Panels", d.technical.panelQty],
+            ["Panel Technology", d.technical.panelTech],
+            ["String Configuration", d.technical.stringConfig],
+            ["Inverter Brand", d.technical.invBrand],
+            ["Inverter Model", d.technical.invModel],
+            ["Inverter Capacity", d.technical.invCapacity],
+            ["MPPT Quantity", d.technical.mppt],
+            ["WiFi Monitoring", d.technical.wifi]
+          ]
+        },
+        {
+          name: "Cable Details",
+          columns: ["Cable Type","Size (sqmm)","Length (m)","Remarks"],
+          rows: [
+            ["DC Cable (Panel to DCDB)", d.cable.dcdb.size, d.cable.dcdb.len, d.cable.dcdb.remark],
+            ["DC Cable (DCDB to Inverter)", d.cable.inv.size, d.cable.inv.len, d.cable.inv.remark],
+            ["AC Cable (Inverter to ACDB)", d.cable.acdb.size, d.cable.acdb.len, d.cable.acdb.remark],
+            ["AC Cable (ACDB to Main Panel)", d.cable.main.size, d.cable.main.len, d.cable.main.remark],
+            ["Earthing Cable", d.cable.earthing.size, d.cable.earthing.len, d.cable.earthing.remark]
+          ]
+        },
+        {
+          name: "Structure Details",
+          columns: ["Field", "Information"],
+          rows: [
+            ["Structure Type (HDGI/Aluminium)", d.structure.type],
+            ["Tilt Angle", d.structure.tilt],
+            ["Structure Front Height (in mm)", d.structure.frontH],
+            ["Structure Back Height (in mm)", d.structure.backH],
+            ["Structure Length (F-to-F or B-to-B) (in mm)", d.structure.len],
+            ["Structure Width (F-to-B or B-to-F) (in mm)", d.structure.width],
+            ["Base/Width Channel Unit Weight (kg/m) (C 80x40, 2mm)", d.structure.bwKgpm],
+            ["Length Channel Unit Weight (kg/m) (Slotted C 41x41, 2mm)", d.structure.lenKgpm],
+            ["Foundation Type", d.structure.foundation],
+            ["Number of Rows", d.structure.rows],
+            ["Panels per Row", d.structure.panelsRow]
+          ]
+        },
+        {
+          name: "BOQ",
+          columns: ["Item","Specification","Quantity","Unit","Remarks"],
+          rows: [
+            ["Solar Panels", d.boq.panels.spec, d.boq.panels.qty, d.boq.panels.unit, d.boq.panels.remark],
+            ["Solar Inverter", d.boq.inverter.spec, d.boq.inverter.qty, d.boq.inverter.unit, d.boq.inverter.remark],
+            ["DCDB", d.boq.dcdb.spec, d.boq.dcdb.qty, d.boq.dcdb.unit, d.boq.dcdb.remark],
+            ["ACDB", d.boq.acdb.spec, d.boq.acdb.qty, d.boq.acdb.unit, d.boq.acdb.remark],
+            ["DC Cable", d.boq.dcCable.spec, d.boq.dcCable.qty, d.boq.dcCable.unit, d.boq.dcCable.remark],
+            ["AC Cable", d.boq.acCable.spec, d.boq.acCable.qty, d.boq.acCable.unit, d.boq.acCable.remark],
+            ["Earthing Kit", d.boq.earthing.spec, d.boq.earthing.qty, d.boq.earthing.unit, d.boq.earthing.remark],
+            ["Lightning Arrestor", d.boq.lightning.spec, d.boq.lightning.qty, d.boq.lightning.unit, d.boq.lightning.remark],
+            ["GI Mounting Structure", d.boq.gi.spec, d.boq.gi.qty, d.boq.gi.unit, d.boq.gi.remark],
+            ["Installation Charges", d.boq.install.spec, d.boq.install.qty, d.boq.install.unit, d.boq.install.remark]
+          ]
+        }
+      ];
+
+      sections.forEach((s, idx) => {
+        if (idx > 0) doc.addPage();
+        addTable(s.name, s.columns, s.rows, { summaryLines: s.summaryLines });
+      });
+
+      const filename = (d.customer.name || "solar-site-survey") + ".pdf";
+      doc.save(filename);
+    }
+
+    document.getElementById("btnExport").onclick = exportExcel;
+    document.getElementById("btnExportPdf").onclick = exportPdf;
+
+    // Load calculator buttons + init
+    document.getElementById("btnLoadAddRow").onclick = () => {
+      document.getElementById("loadTableBody").appendChild(loadRowTemplate({}));
+      calcLoadTotals();
+    };
+    document.getElementById("btnLoadCopyToSite").onclick = () => {
+      const kw = numVal(document.getElementById("load_total_w").textContent) / 1000;
+      site_load.value = kw ? format2(kw) : "";
+      activate("Site Survey");
+    };
+
+    setLoadItems([]);
+
+    function numVal(v) {
       const n = parseFloat(v);
       return Number.isFinite(n) ? n : 0;
     }
-
     function calcGiStructure() {
       const lenMm = numVal(struct_len.value);
       const widthMm = numVal(struct_width.value);
@@ -930,6 +1322,10 @@
   </script>
 </body>
 </html>
+
+
+
+
 
 
 
