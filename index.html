@@ -152,6 +152,11 @@
       box-shadow: 0 10px 22px rgba(31,22,15,0.08);
     }
     .actions .btn-outline:hover{ transform: translateY(-1px); }
+    .topbar .btn-outline{
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid #eadfd7;
+    }
     @keyframes fadeUp{
       from{ opacity:0; transform: translateY(8px); }
       to{ opacity:1; transform: translateY(0); }
@@ -202,6 +207,7 @@
       <select id="existingList" disabled></select>
       <button type="button" id="btnLoad">Load</button>
       <button type="button" id="btnSaveLocal">Save (Local)</button>
+      <button type="button" id="btnUpdateLocal" class="btn-outline" disabled>Save Changes</button>
       <button type="button" id="btnDeleteLocal">Delete Customer</button>
     </div>
 
@@ -761,6 +767,36 @@
       return mobile ? `${name} | ${mobile}` : name;
     }
 
+    let loadedCustomerKey = "";
+
+    function clearForNewCustomer() {
+      document.querySelectorAll("#panels input, #panels textarea").forEach(el => {
+        const tag = (el.tagName || "").toLowerCase();
+        if (tag !== "input" && tag !== "textarea") return;
+
+        const type = (el.getAttribute("type") || "").toLowerCase();
+        if (type === "checkbox" || type === "radio") {
+          el.checked = false;
+          return;
+        }
+        if (type === "file") {
+          el.value = "";
+          return;
+        }
+
+        if (el.hasAttribute("readonly")) {
+          el.value = el.defaultValue || el.value || "";
+          return;
+        }
+        el.value = "";
+      });
+      document.querySelectorAll("#panels select").forEach(el => {
+        el.selectedIndex = 0;
+      });
+
+      setLoadItems([]);
+      activate("Customer Details");
+    }
     function setControlsState() {
       const isExisting = document.querySelector('input[name="custType"]:checked').value === 'existing';
       const list = document.getElementById("existingList");
@@ -768,18 +804,60 @@
       list.disabled = !isExisting;
       document.getElementById("btnLoad").disabled = !isExisting || !hasItems || !list.value;
       document.getElementById("btnDeleteLocal").disabled = !isExisting || !hasItems || !list.value;
+      document.getElementById("btnSaveLocal").disabled = isExisting;
+      document.getElementById("btnUpdateLocal").disabled = !isExisting || !loadedCustomerKey;
     }
 
     function saveLocal(silent=false) {
+      const isExisting = document.querySelector('input[name="custType"]:checked').value === 'existing';
+      if (isExisting) {
+        if (!silent) alert("Use 'Save Changes' for existing customers.");
+        return;
+      }
       const key = makeKey();
       if (!key) { if (!silent) alert("Customer Name required"); return; }
       const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+
+      if (all[key] && !silent) {
+        if (!confirm(`Customer '${key}' already exists. Overwrite?`)) return;
+      }
       all[key] = getFormData();
       localStorage.setItem("solar_customers", JSON.stringify(all));
       loadCustomerList(key);
       if (!silent) alert("Saved locally");
     }
 
+    
+    function saveExisting(silent=false) {
+      const isExisting = document.querySelector('input[name="custType"]:checked').value === 'existing';
+      if (!isExisting) {
+        if (!silent) alert("Select 'Existing Customer' first.");
+        return;
+      }
+      if (!loadedCustomerKey) {
+        if (!silent) alert("Load an existing customer first.");
+        return;
+      }
+
+      const nextKey = makeKey();
+      if (!nextKey) { if (!silent) alert("Customer Name required"); return; }
+
+      const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+
+      if (nextKey !== loadedCustomerKey) {
+        if (all[nextKey] && !silent) {
+          if (!confirm(`Customer '${nextKey}' already exists. Overwrite and rename current customer?`)) return;
+        }
+        delete all[loadedCustomerKey];
+        loadedCustomerKey = nextKey;
+      }
+
+      all[loadedCustomerKey] = getFormData();
+      localStorage.setItem("solar_customers", JSON.stringify(all));
+      loadCustomerList(loadedCustomerKey);
+      if (!silent) alert("Updated");
+      setControlsState();
+    }
     function deleteLocal() {
       const list = document.getElementById("existingList");
       const key = list.value || makeKey();
@@ -790,6 +868,13 @@
       delete all[key];
       localStorage.setItem("solar_customers", JSON.stringify(all));
       loadCustomerList();
+
+      if (loadedCustomerKey === key) {
+        loadedCustomerKey = "";
+        document.querySelector('input[name="custType"][value="new"]').checked = true;
+        document.getElementById("existingList").value = "";
+        clearForNewCustomer();
+      }
       alert("Deleted");
     }
 
@@ -817,19 +902,41 @@
       const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
       if (!all[key]) { alert("Customer not found"); return; }
       setFormData(all[key]);
+      loadedCustomerKey = key;
+      setControlsState();
     }
 
     document.getElementById("btnSaveLocal").onclick = () => saveLocal(false);
+    document.getElementById("btnUpdateLocal").onclick = () => saveExisting(false);
     document.getElementById("btnDeleteLocal").onclick = deleteLocal;
     document.getElementById("btnLoad").onclick = loadSelected;
-    document.getElementById("existingList").addEventListener("change", setControlsState);
-
+    document.getElementById("existingList").addEventListener("change", () => {
+      loadedCustomerKey = "";
+      setControlsState();
+    });
     document.querySelectorAll('input[name="custType"]').forEach(r => {
       r.addEventListener('change', () => {
+        const isExisting = document.querySelector('input[name="custType"]:checked').value === 'existing';
+        if (!isExisting) {
+          loadedCustomerKey = "";
+          document.getElementById("existingList").value = "";
+          clearForNewCustomer();
+        } else {
+          loadedCustomerKey = "";
+        }
         setControlsState();
       });
     });
 
+    const newCustomerRadio = document.querySelector('input[name="custType"][value="new"]');
+    if (newCustomerRadio) {
+      newCustomerRadio.addEventListener('click', () => {
+        loadedCustomerKey = "";
+        document.getElementById("existingList").value = "";
+        clearForNewCustomer();
+        setControlsState();
+      });
+    }
     // Auto-save every 15 seconds
     setInterval(() => {
       const name = cust_name.value.trim();
