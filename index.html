@@ -138,7 +138,31 @@
     .mini-actions{
       display:flex; gap:8px; align-items:center; flex: 1 1 260px; justify-content:flex-end;
     }
-    .btn-ghost{
+        .mini-select{
+      padding:10px 12px; border-radius:999px; cursor:pointer;
+      border:1px solid #eadfd7; background:#fff; font-weight:700; color:var(--ink);
+    }
+    .load-picker{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      margin: 4px 0 10px;
+    }
+    .load-picker label{ font-size:12px; color: var(--muted); font-weight:700; }
+    .load-picker select{ min-width: 260px; }
+    .lc-namewrap{ display:flex; gap:8px; align-items:center; }
+    .lc-preset{ width: 44%; min-width: 150px; }
+    .appliance-summary{
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px dashed #eadfd7;
+      border-radius:12px;
+      background:#fff;
+    }
+    .appliance-summary small{ display:block; color: var(--muted); font-weight:700; margin-bottom:6px; }
+    .appliance-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+    .appliance-chip{
+      background:#fff7f1; border:1px solid #eadfd7; border-radius:999px;
+      padding:6px 10px; font-size:13px; font-weight:700; color:var(--ink);
+    }.btn-ghost{
       padding:10px 14px; border-radius:999px; cursor:pointer;
       border:1px solid #eadfd7; background:#fff; font-weight:700; color:var(--ink);
     }
@@ -296,7 +320,6 @@
           </tbody>
         </table>
       </div>
-
       <!-- Load Calculator -->
       <div class="panel" data-tab="Load Calculator">
         <div class="load-toolbar">
@@ -305,31 +328,50 @@
             <div class="mini-value"><span id="load_total_w">0</span> W (<span id="load_total_kw">0.00</span> kW)</div>
           </div>
           <div class="mini-card">
+            <div class="mini-label">Peak Load (Diversified)</div>
+            <div class="mini-value"><span id="load_div_w">0</span> W (<span id="load_div_kw">0.00</span> kW)</div>
+          </div>
+          <div class="mini-card">
             <div class="mini-label">Daily Energy (approx)</div>
             <div class="mini-value"><span id="load_total_kwh">0.00</span> kWh/day</div>
           </div>
           <div class="mini-actions">
             <button type="button" id="btnLoadAddRow" class="btn-ghost">Add Row</button>
-            <button type="button" id="btnLoadCopyToSite" class="btn-ghost">Copy kW to Site Survey</button>
+            <select id="load_copy_mode" class="mini-select" title="Choose which load to copy">
+              <option value="diversified">Copy Diversified kW</option>
+              <option value="connected">Copy Connected kW</option>
+            </select>
+            <button type="button" id="btnLoadCopyToSite" class="btn-ghost">Copy to Site Survey</button>
           </div>
+        </div>
+
+        <div class="load-picker">
+          <label for="appliancePicker">Add appliance:</label>
+          <select id="appliancePicker"></select>
+          <button type="button" id="btnAddAppliance" class="btn-ghost">Add</button>
         </div>
 
         <table id="loadTable">
           <thead>
             <tr>
-              <th style="width:46%">Appliance / Load</th>
-              <th style="width:14%">Qty</th>
-              <th style="width:20%">Watt (W)</th>
-              <th style="width:20%">Hours/day</th>
+              <th style="width:38%">Appliance / Load</th>
+              <th style="width:12%">Qty</th>
+              <th style="width:16%">Watt (W)</th>
+              <th style="width:16%">Hours/day</th>
+              <th style="width:18%">Diversity</th>
             </tr>
           </thead>
           <tbody id="loadTableBody"></tbody>
         </table>
-        <small class="hint">Add items, fill Qty/Watt/Hours; totals update automatically. Use "Copy kW to Site Survey" to fill "Sanctioned Load (kW)".</small>
+        <small class="hint">Select appliances (or type custom), fill Qty/Watt/Hours &amp; Diversity; totals update automatically. Use the dropdown to copy either Connected or Diversified kW into "Sanctioned Load (kW)".</small>
+        <div class="appliance-summary" id="applianceSummary" aria-live="polite">
+          <small>Appliances used (from the table above):</small>
+          <div class="appliance-chips" id="applianceChips"></div>
+        </div>
       </div>
 
       <!-- Technical Details -->
-      <div class="panel" data-tab="Technical Details">
+<div class="panel" data-tab="Technical Details">
         <table>
           <thead><tr><th>Field</th><th>Information</th></tr></thead>
           <tbody>
@@ -450,7 +492,7 @@
             <button type="button" onclick="calcInput('.')">.</button>
             <button type="button" class="calc-fn" onclick="calcClear()">AC</button>
             <button type="button" class="calc-op" onclick="calcInput('+')">+</button>
-            <button type="button" class="calc-fn calc-back" onclick="calcBack()">⌫</button>
+            <button type="button" class="calc-fn calc-back" onclick="calcBack()">âŒ«</button>
             <button type="button" class="calc-eq" onclick="calcEval()">=</button>
           </div>
         </div>
@@ -487,29 +529,159 @@
       return Number.isFinite(v) ? v.toFixed(2) : "0.00";
     }
 
-    function loadRowTemplate(item={}) {
+    const APPLIANCE_CATALOG = [
+      { id: "led_bulb", name: "LED Bulb", watt: 9, hours: 6, df: 1.0, category: "Lighting" },
+      { id: "tube_light", name: "Tube Light", watt: 20, hours: 6, df: 1.0, category: "Lighting" },
+      { id: "ceiling_fan", name: "Ceiling Fan", watt: 70, hours: 10, df: 0.9, category: "Cooling" },
+      { id: "exhaust_fan", name: "Exhaust Fan", watt: 35, hours: 2, df: 0.7, category: "Cooling" },
+      { id: "tv", name: "TV", watt: 120, hours: 5, df: 0.8, category: "Entertainment" },
+      { id: "set_top_box", name: "Set-Top Box", watt: 15, hours: 5, df: 0.8, category: "Entertainment" },
+      { id: "refrigerator", name: "Refrigerator", watt: 200, hours: 24, df: 1.0, category: "Kitchen" },
+      { id: "microwave", name: "Microwave", watt: 1200, hours: 0.5, df: 0.4, category: "Kitchen" },
+      { id: "induction", name: "Induction Cooktop", watt: 1800, hours: 1, df: 0.5, category: "Kitchen" },
+      { id: "mixer", name: "Mixer Grinder", watt: 500, hours: 0.3, df: 0.3, category: "Kitchen" },
+      { id: "ro", name: "RO Purifier", watt: 30, hours: 4, df: 0.8, category: "Kitchen" },
+      { id: "geyser", name: "Geyser", watt: 2000, hours: 1, df: 0.6, category: "Heating" },
+      { id: "iron", name: "Iron", watt: 1000, hours: 0.5, df: 0.3, category: "Heating" },
+      { id: "washing_machine", name: "Washing Machine", watt: 500, hours: 1, df: 0.5, category: "Laundry" },
+      { id: "water_pump", name: "Water Pump", watt: 750, hours: 1, df: 0.7, category: "Utilities" },
+      { id: "laptop", name: "Laptop / Computer", watt: 100, hours: 6, df: 0.7, category: "Utilities" },
+      { id: "wifi_router", name: "WiFi Router", watt: 10, hours: 24, df: 1.0, category: "Utilities" },
+      { id: "ac_1_5t", name: "AC (1.5 Ton)", watt: 1500, hours: 6, df: 0.7, category: "Cooling" },
+      { id: "ac_2t", name: "AC (2 Ton)", watt: 2200, hours: 6, df: 0.7, category: "Cooling" },
+      { id: "ev_charger", name: "EV Charger", watt: 3000, hours: 3, df: 0.8, category: "Utilities" }
+    ];
+    const APPLIANCE_BY_ID = new Map(APPLIANCE_CATALOG.map(a => [a.id, a]));
+
+    function buildApplianceOptionsHTML(includeCustom=true) {
+      const byCat = new Map();
+      APPLIANCE_CATALOG.forEach(a => {
+        const key = a.category || "Other";
+        if (!byCat.has(key)) byCat.set(key, []);
+        byCat.get(key).push(a);
+      });
+      const cats = Array.from(byCat.keys()).sort();
+      const esc = (s) => String(s ?? "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      let html = "";
+      if (includeCustom) html += `<option value="">Custom</option>`;
+      cats.forEach(cat => {
+        const list = byCat.get(cat) || [];
+        html += `<optgroup label="${esc(cat)}">`;
+        list.forEach(a => {
+          html += `<option value="${esc(a.id)}">${esc(a.name)}</option>`;
+        });
+        html += `</optgroup>`;
+      });
+      return html;
+    }
+    const APPLIANCE_OPTIONS_HTML = buildApplianceOptionsHTML(true);
+    const APPLIANCE_PICKER_HTML = buildApplianceOptionsHTML(false);
+
+    function normalizeDfValue(df) {
+      const raw = String(df ?? "").trim();
+      if (!raw) return 1;
+      const n = Number(raw);
+      if (!Number.isFinite(n)) return 1;
+      if (n < 0) return 0;
+      if (n > 1) return 1;
+      return n;
+    }
+
+    function applyAppliancePreset(tr, presetId) {
+      const preset = APPLIANCE_BY_ID.get(presetId);
+      if (!preset) return;
+
+      const prevPresetId = tr.dataset.presetId || "";
+      const prevPreset = APPLIANCE_BY_ID.get(prevPresetId);
+      tr.dataset.presetId = presetId;
+
+      const nameEl = tr.querySelector(".lc-name");
+      const wattEl = tr.querySelector(".lc-watt");
+      const hoursEl = tr.querySelector(".lc-hours");
+      const dfEl = tr.querySelector(".lc-df");
+
+      if (nameEl && (!nameEl.value || (prevPreset && nameEl.value === prevPreset.name))) nameEl.value = preset.name;
+      if (wattEl && (!wattEl.value || (prevPreset && numVal(wattEl.value) === numVal(prevPreset.watt)))) wattEl.value = String(preset.watt);
+      if (hoursEl && (!hoursEl.value || (prevPreset && numVal(hoursEl.value) === numVal(prevPreset.hours)))) hoursEl.value = String(preset.hours);
+      if (dfEl && (!dfEl.value || (prevPreset && normalizeDfValue(dfEl.value) === normalizeDfValue(prevPreset.df)))) dfEl.value = String(preset.df);
+    }
+
+    function updateApplianceSummary() {
+      const chips = document.getElementById("applianceChips");
+      if (!chips) return;
+
+      const items = getLoadItems();
+      const agg = new Map();
+      items.forEach(it => {
+        const name = (it.name || "").trim();
+        if (!name) return;
+        const qty = Math.max(0, Math.floor(numVal(it.qty)));
+        if (!qty) return;
+        agg.set(name, (agg.get(name) || 0) + qty);
+      });
+
+      const list = Array.from(agg.entries())
+        .sort((a,b) => a[0].localeCompare(b[0]))
+        .map(([name, qty]) => ({ name, qty }));
+
+      chips.innerHTML = "";
+      if (!list.length) {
+        const el = document.createElement("div");
+        el.className = "appliance-chip";
+        el.textContent = "No appliances added yet";
+        chips.appendChild(el);
+        return;
+      }
+      list.forEach(({name, qty}) => {
+        const el = document.createElement("div");
+        el.className = "appliance-chip";
+        el.textContent = `${name} × ${qty}`;
+        chips.appendChild(el);
+      });
+    }
+
+        function loadRowTemplate(item={}) {
       const tr = document.createElement("tr");
       const esc = (s) => String(s ?? "").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      const presetId = String(item.preset || item.presetId || "").trim();
+      const dfVal = (item.df ?? item.diversity ?? "");
       tr.innerHTML = `
-        <td><input class="lc-name" placeholder="e.g. Fan" value="${esc(item.name)}"></td>
+        <td>
+          <div class="lc-namewrap">
+            <select class="lc-preset" title="Select appliance">${APPLIANCE_OPTIONS_HTML}</select>
+            <input class="lc-name" placeholder="e.g. Fan" value="${esc(item.name)}">
+          </div>
+        </td>
         <td><input class="lc-qty" inputmode="decimal" value="${esc(item.qty)}"></td>
         <td><input class="lc-watt" inputmode="decimal" value="${esc(item.watt)}"></td>
         <td><input class="lc-hours" inputmode="decimal" value="${esc(item.hours)}"></td>
+        <td><input class="lc-df" inputmode="decimal" placeholder="e.g. 0.7" value="${esc(dfVal)}" title="Diversity factor (0 to 1)"></td>
       `;
+      const presetSel = tr.querySelector(".lc-preset");
+      if (presetSel) {
+        presetSel.value = presetId;
+        if (presetId) tr.dataset.presetId = presetId;
+        presetSel.addEventListener("change", () => {
+          applyAppliancePreset(tr, presetSel.value);
+          calcLoadTotals();
+        });
+      }
       tr.querySelectorAll("input").forEach(inp => inp.addEventListener("input", calcLoadTotals));
+      if (presetId) applyAppliancePreset(tr, presetId);
       return tr;
     }
 
-    function getLoadItems() {
+        function getLoadItems() {
       const rows = Array.from(document.querySelectorAll("#loadTableBody tr"));
       return rows.map(tr => ({
+        preset: ((tr.querySelector(".lc-preset") || {}).value || ""),
         name: (tr.querySelector(".lc-name") || {}).value || "",
         qty: (tr.querySelector(".lc-qty") || {}).value || "",
         watt: (tr.querySelector(".lc-watt") || {}).value || "",
-        hours: (tr.querySelector(".lc-hours") || {}).value || ""
-      })).filter(r => (r.name || "").trim() || (r.qty || "").trim() || (r.watt || "").trim() || (r.hours || "").trim());
+        hours: (tr.querySelector(".lc-hours") || {}).value || "",
+        df: (tr.querySelector(".lc-df") || {}).value || ""
+      })).filter(r => (r.name || "").trim() || (r.qty || "").trim() || (r.watt || "").trim() || (r.hours || "").trim() || (r.df || "").trim());
     }
-
     function setLoadItems(items) {
       const body = document.getElementById("loadTableBody");
       if (!body) return;
@@ -519,26 +691,35 @@
       calcLoadTotals();
     }
 
-    function calcLoadTotals() {
+        function calcLoadTotals() {
       const rows = Array.from(document.querySelectorAll("#loadTableBody tr"));
       let totalW = 0;
+      let totalDivW = 0;
       let totalKwh = 0;
       rows.forEach(tr => {
         const qty = numVal((tr.querySelector(".lc-qty") || {}).value);
         const watt = numVal((tr.querySelector(".lc-watt") || {}).value);
         const hours = numVal((tr.querySelector(".lc-hours") || {}).value);
+        const df = normalizeDfValue((tr.querySelector(".lc-df") || {}).value);
         const connected = qty * watt;
         const dailyKwh = (connected * hours) / 1000;
         totalW += connected;
+        totalDivW += connected * df;
         totalKwh += dailyKwh;
       });
       const elW = document.getElementById("load_total_w");
       const elKw = document.getElementById("load_total_kw");
       const elKwh = document.getElementById("load_total_kwh");
+      const elDivW = document.getElementById("load_div_w");
+      const elDivKw = document.getElementById("load_div_kw");
       if (elW) elW.textContent = String(Math.round(totalW));
       if (elKw) elKw.textContent = format2(totalW / 1000);
       if (elKwh) elKwh.textContent = format2(totalKwh);
-    }    function getFormData() {
+      if (elDivW) elDivW.textContent = String(Math.round(totalDivW));
+      if (elDivKw) elDivKw.textContent = format2(totalDivW / 1000);
+      updateApplianceSummary();
+    }
+    function getFormData() {
       return {
         customer: {
           name: cust_name.value,
@@ -578,6 +759,7 @@
           surveyedBy: site_by.value
         },
         loadCalc: {
+          copyMode: (document.getElementById("load_copy_mode") || {}).value || "diversified",
           items: getLoadItems()
         },
         technical: {
@@ -673,8 +855,7 @@
       site_date.value = s.date || '';
       site_by.value = s.surveyedBy || '';
 
-
-      setLoadItems((lc.items || []));
+      const copyModeEl = document.getElementById()      
       tech_capacity.value = t.capacity || '';
       tech_type.value = t.type || '';
       tech_panel_brand.value = t.panelBrand || '';
@@ -1015,17 +1196,15 @@
           ["Surveyed By", d.site.surveyedBy]
         ]
       ), "Site Survey");
-
       const loadItems = (d.loadCalc || {}).items || [];
       const loadRows = loadItems.map(it => {
-        return [it.name || "", it.qty || "", it.watt || "", it.hours || ""]; 
+        return [it.name || "", it.qty || "", it.watt || "", it.hours || "", (it.df ?? "") || ""];
       });
       XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Load Calculator",
-        ["Appliance / Load","Qty","Watt (W)","Hours/day"],
+        ["Appliance / Load","Qty","Watt (W)","Hours/day","Diversity"],
         loadRows
       ), "Load Calculator");
-
-      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
+XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
         ["Field","Information"],
         [
           ["System Capacity (kW)", d.technical.capacity],
@@ -1126,13 +1305,16 @@
         let startY = 130;
         if (opts && Array.isArray(opts.summaryLines) && opts.summaryLines.length) {
           doc.setTextColor(31, 22, 15);
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(11);
-          doc.text(String(opts.summaryLines[0] || ""), 40, 136);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(10);
-          if (opts.summaryLines[1]) doc.text(String(opts.summaryLines[1]), 40, 152);
-          startY = 170;
+          let y = 136;
+          opts.summaryLines.forEach((line, idx) => {
+            const s = String(line ?? "");
+            if (!s.trim()) return;
+            doc.setFont("helvetica", idx === 0 ? "bold" : "normal");
+            doc.setFontSize(idx === 0 ? 11 : 10);
+            doc.text(s, 40, y);
+            y += 16;
+          });
+          startY = y + 8;
         }
 
         doc.autoTable({
@@ -1149,20 +1331,23 @@
 
       const loadItemsRaw = (((d.loadCalc || {}).items) || []);
       let loadTotalW = 0;
+      let loadTotalDivW = 0;
       let loadTotalKwh = 0;
       loadItemsRaw.forEach(it => {
         const qty = numVal(it.qty);
         const watt = numVal(it.watt);
         const hours = numVal(it.hours);
+        const df = normalizeDfValue(it.df);
         const connected = qty * watt;
         loadTotalW += connected;
+        loadTotalDivW += connected * df;
         loadTotalKwh += (connected * hours) / 1000;
       });
       const loadSummaryLines = [
         `Total Connected Load: ${Math.round(loadTotalW)} W (${format2(loadTotalW/1000)} kW)`,
+        `Diversified Peak Load: ${Math.round(loadTotalDivW)} W (${format2(loadTotalDivW/1000)} kW)`,
         `Daily Energy (approx): ${format2(loadTotalKwh)} kWh/day`
       ];
-
       const sections = [
         {
           name: "Customer Details",
@@ -1209,17 +1394,12 @@
             ["Surveyed By", d.site.surveyedBy]
           ]
         },
-        {
+                {
           name: "Load Calculator",
           summaryLines: loadSummaryLines,
-          columns: ["Appliance / Load","Qty","Watt (W)","Hours/day"],
+          columns: ["Appliance / Load","Qty","Watt (W)","Hours/day","Diversity"],
           rows: loadItemsRaw.map(it => {
-            const qty = numVal(it.qty);
-            const watt = numVal(it.watt);
-            const hours = numVal(it.hours);
-            const connected = qty * watt;
-            const dailyKwh = (connected * hours) / 1000;
-            return [it.name || "", it.qty || "", it.watt || "", it.hours || ""]; 
+            return [it.name || "", it.qty || "", it.watt || "", it.hours || "", (it.df ?? "") || ""];
           })
         },
         {
@@ -1303,11 +1483,30 @@
       document.getElementById("loadTableBody").appendChild(loadRowTemplate({}));
       calcLoadTotals();
     };
-    document.getElementById("btnLoadCopyToSite").onclick = () => {
-      const kw = numVal(document.getElementById("load_total_w").textContent) / 1000;
+        document.getElementById("btnLoadCopyToSite").onclick = () => {
+      const mode = (document.getElementById("load_copy_mode") || {}).value || "diversified";
+      const w = mode === "connected"
+        ? numVal((document.getElementById("load_total_w") || {}).textContent)
+        : numVal((document.getElementById("load_div_w") || {}).textContent);
+      const kw = w / 1000;
       site_load.value = kw ? format2(kw) : "";
       activate("Site Survey");
     };
+
+    // Appliance picker
+    (function initAppliancePicker(){
+      const picker = document.getElementById("appliancePicker");
+      if (!picker) return;
+      picker.innerHTML = APPLIANCE_PICKER_HTML;
+      const btn = document.getElementById("btnAddAppliance");
+      if (btn) btn.onclick = () => {
+        const id = picker.value;
+        const preset = APPLIANCE_BY_ID.get(id);
+        const item = preset ? { preset: preset.id, name: preset.name, qty: 1, watt: preset.watt, hours: preset.hours, df: preset.df } : {};
+        document.getElementById("loadTableBody").appendChild(loadRowTemplate(item));
+        calcLoadTotals();
+      };
+    })();
 
     setLoadItems([]);
 
@@ -1429,11 +1628,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
