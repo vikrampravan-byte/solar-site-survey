@@ -855,7 +855,9 @@
       site_date.value = s.date || '';
       site_by.value = s.surveyedBy || '';
 
-      const copyModeEl = document.getElementById()      
+      const copyModeEl = document.getElementById("load_copy_mode");
+      if (copyModeEl) copyModeEl.value = lc.copyMode || "diversified";
+      setLoadItems((lc.items || []));
       tech_capacity.value = t.capacity || '';
       tech_type.value = t.type || '';
       tech_panel_brand.value = t.panelBrand || '';
@@ -998,7 +1000,6 @@
       const key = makeKey();
       if (!key) { if (!silent) alert("Customer Name required"); return; }
       const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
-
       if (all[key] && !silent) {
         if (!confirm(`Customer '${key}' already exists. Overwrite?`)) return;
       }
@@ -1049,7 +1050,6 @@
       delete all[key];
       localStorage.setItem("solar_customers", JSON.stringify(all));
       loadCustomerList();
-
       if (loadedCustomerKey === key) {
         loadedCustomerKey = "";
         document.querySelector('input[name="custType"][value="new"]').checked = true;
@@ -1628,3 +1628,14 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
