@@ -203,6 +203,12 @@
       .hero h2{ font-size:22px; }
     }
 
+    @media (max-width: 900px){
+      .load-toolbar{ flex-direction:column; }
+      .mini-card{ flex: 1 1 100%; }
+      .mini-actions{ flex-direction:column; justify-content:flex-start; width:100%; }
+    }
+
     @media (max-width: 700px){
       body{ font-size:17px; }
       .wrap{ margin: 8px; padding:10px; border-radius:12px; }
@@ -210,16 +216,115 @@
       thead{ display:none; }
       tbody, tr, td, th{ display:block; width:100%; }
       tr{ margin-bottom:10px; background:#fff7f1; border:1px solid #eadfd7; border-radius:12px; overflow:hidden; }
-      td{ border:none; border-bottom:1px dashed #eadfd7; }
-      td:first-child{ font-weight:600; color:var(--ink); background:#fff1e7; }
+      td{ border:none; border-bottom:1px dashed #eadfd7; padding:10px; }
+      td:first-child{ font-weight:600; color:var(--ink); background:#fff1e7; padding:10px; }
       td:last-child{ border-bottom:none; }
-      td input, td select, td textarea{ font-size:17px; padding:14px 12px; }
-      .tabs{ gap:6px; }
-      .tab{ font-size:14px; padding:10px 12px; }
-      .actions{ justify-content:center; }
-      .calculator{ width:100%; }
+      td input, td select, td textarea{ font-size:17px; padding:14px 12px; width:100%; }
+      .tabs{ gap:6px; flex-wrap:wrap; justify-content:flex-start; }
+      .tab{ font-size:13px; padding:10px 12px; flex: 0 1 auto; }
+      .actions{ flex-direction:column; gap:8px; }
+      .actions button{ width:100%; }
+      .calculator{ width:100%; min-width:100%; }
       .calc-history{ width:100%; max-width:none; }
-    }  </style>
+      .calc-wrap{ flex-direction:column; width:100%; }
+      .topbar{ flex-direction:column; }
+      .topbar label{ width:100%; }
+      .topbar input, .topbar select, .topbar button{ width:100%; }
+      .topbar button{ padding:10px; }
+      .hero{ flex-direction:column; align-items:flex-start; }
+      .hero h2{ font-size:20px; margin-bottom:8px; }
+      .load-toolbar{ flex-direction:column; gap:12px; }
+      .mini-card{ min-width:unset; width:100%; }
+      .mini-actions{ flex-direction:column; gap:8px; justify-content:flex-start; }
+      .mini-select{ width:100%; }
+      .load-picker{ flex-direction:column; }
+      .load-picker select{ width:100%; min-width:unset; }
+      .load-picker label{ width:100%; margin-bottom:4px; }
+      .lc-namewrap{ flex-direction:column; gap:4px; }
+      .lc-preset{ width:100%; }
+      .lc-name{ width:100%; }
+      #loadTable{ font-size:13px; }
+      #loadTable thead{ display:none; }
+      #loadTable tr{ display:flex; flex-direction:column; }
+      #loadTable td{ display:flex; align-items:center; padding:8px; }
+      #loadTable td:before{ content:attr(data-label); font-weight:600; min-width:140px; color:var(--ink); }
+      #loadTable th:before{ content:attr(data-label); font-weight:600; color:var(--ink); }
+      .appliance-chips{ gap:4px; }
+      .appliance-chip{ font-size:12px; padding:4px 8px; }
+      input[type="file"]{ padding:8px 0; }
+      .hint{ font-size:12px; margin-top:6px; }
+
+      /* Costing mobile styles */
+      .costing-tabs{ gap: 6px; justify-content: flex-start; }
+      .costing-tab-btn{ font-size: 13px; padding: 8px 10px; }
+      .costing-filter-section{ flex-direction: column; align-items: flex-start; gap: 10px; }
+      .costing-table{ display: block; }
+      .costing-table thead{ display: none; }
+      .costing-table tbody, .costing-table tr, .costing-table td, .costing-table th{ display: block; width: 100%; }
+      .costing-table tr{ margin-bottom: 10px; background: var(--bg); border: 1px solid var(--grid); border-radius: 10px; overflow: hidden; }
+      .costing-table td{ border: none; border-bottom: 1px dashed var(--grid); }
+      .costing-table td:first-child{ font-weight: 600; color: var(--ink); background: #fff1e7; }
+      .costing-table td:last-child{ border-bottom: none; }
+      .costing-table .table-input{ font-size: 16px; padding: 12px 10px; }
+      .costing-total-display{ padding: 15px; font-size: 1.5rem; }
+      .costing-total-display span:last-child{ font-size: 1.8rem; }
+    }
+
+    @media (max-width: 480px){
+      .wrap{ margin: 4px; padding:8px; }
+      body{ font-size:16px; }
+      .hero h2{ font-size:18px; }
+      .tab{ font-size:12px; padding:8px 10px; }
+      td input, td select, td textarea{ font-size:16px; padding:12px 10px; }
+      .topbar label{ font-size:13px; }
+      .mini-card{ padding:8px 10px; }
+      .mini-label{ font-size:11px; }
+      .mini-value{ font-size:14px; }
+      .actions button{ font-size:14px; padding:10px 14px; }
+      .calc-grid button{ height:36px; font-size:13px; }
+      .calc-grid .calc-eq{ font-size:14px; }
+      .calculator h3{ font-size:13px; }
+      .calc-row input{ font-size:16px; padding:10px; }
+    }
+
+    @media (max-width: 380px){
+      .wrap{ padding:6px; margin:2px; }
+      body{ font-size:15px; }
+      .hero{ gap:4px; }
+      .hero h2{ font-size:16px; margin:0; }
+      .hero small{ font-size:12px; }
+      .tab{ font-size:11px; padding:6px 8px; }
+      .topbar{ padding:8px; }
+      .topbar input, .topbar select, .topbar button{ padding:8px 6px; font-size:14px; }
+      td{ padding:8px; }
+      td input, td select, td textarea{ font-size:15px; padding:10px 8px; }
+      .mini-label{ font-size:10px; }
+      .mini-value{ font-size:13px; }
+      .calc-grid button{ height:34px; font-size:12px; }
+      .calculator h3{ font-size:12px; }
+      .hint{ font-size:11px; }
+    }
+
+    /* Costing Styles */
+    .costing-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .costing-tab-btn { padding: 8px 12px; cursor: pointer; border: 1px solid #eadfd7; background: #fff7f1; font-weight: 600; border-radius: 999px; transition: all 140ms ease; }
+    .costing-tab-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(31,22,15,0.08); }
+    .costing-tab-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); border-color: transparent; color: #1b120c; font-weight: 600; }
+    .costing-filter-section { background: #fff7f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eadfd7; display: flex; align-items: center; gap: 15px; }
+    .kw-select { padding: 6px; border-radius: 8px; border: 1px solid #e4d7ce; font-weight: bold; font-size: 1rem; color: var(--accent); }
+    .costing-table { width: 100%; border-collapse: collapse; background: var(--bg); border-radius: 10px; overflow: hidden; }
+    .costing-table th { background: linear-gradient(135deg, #8b3f10, #b85616); color: var(--headText); text-align: left; font-weight: 600; border: 1px solid var(--grid); padding: 8px; vertical-align: middle; }
+    .costing-table td { border: 1px solid var(--grid); padding: 8px; vertical-align: middle; }
+    .costing-table .editable { background: #fffdf0; border: 1px solid transparent; padding: 5px; border-radius: 4px; width: 100%; display: block; }
+    .costing-table .editable:focus { outline: 2px solid var(--accent); background: white; }
+    .costing-table .table-input { width: 100%; padding: 6px; border: 1px solid #e4d7ce; border-radius: 8px; background: #fff; font-size: 14px; box-sizing: border-box; transition: box-shadow 120ms ease, border-color 120ms ease; }
+    .costing-table .table-input:focus { outline: none; border-color: #f05a28; box-shadow: 0 0 0 3px rgba(240,90,40,0.18); }
+    .costing-total-display { margin-top: 20px; text-align: right; padding: 20px; background: linear-gradient(135deg, #8b3f10, #b85616); color: white; border-radius: 8px; }
+    .costing-tab-content { display: none; }
+    .costing-tab-content.active { display: block; }
+    .data-status { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
+    .data-status.show { opacity: 1; }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -357,11 +462,11 @@
         <table id="loadTable">
           <thead>
             <tr>
-              <th style="width:38%">Appliance / Load</th>
-              <th style="width:12%">Qty</th>
-              <th style="width:16%">Watt (W)</th>
-              <th style="width:16%">Hours/day</th>
-              <th style="width:18%">Diversity</th>
+              <th style="width:38%" data-label="Appliance / Load">Appliance / Load</th>
+              <th style="width:12%" data-label="Qty">Qty</th>
+              <th style="width:16%" data-label="Watt (W)">Watt (W)</th>
+              <th style="width:16%" data-label="Hours/day">Hours/day</th>
+              <th style="width:18%" data-label="Diversity">Diversity</th>
             </tr>
           </thead>
           <tbody id="loadTableBody"></tbody>
@@ -465,6 +570,69 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Costing -->
+      <div class="panel" data-tab="Costing">
+        <div class="costing-tabs">
+          <button id="costing-t1-btn" class="costing-tab-btn active" onclick="switchCostingTab(1)">1. Master Item List</button>
+          <button id="costing-t2-btn" class="costing-tab-btn" onclick="switchCostingTab(2)">2. BOQ Creation</button>
+        </div>
+
+        <div id="costing-tab1" class="costing-tab-content active">
+          <button class="btn btn-add" onclick="addMasterRow()">+ Add New Master Entry</button>
+          <table class="costing-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">S.N.</th>
+                <th style="width:100px;">kW Rating</th>
+                <th style="width:150px;">Make</th>
+                <th>Item Name</th>
+                <th style="width:80px;">Unit</th>
+                <th style="width:120px;">Rate (₹)</th>
+                <th style="width:50px;"></th>
+              </tr>
+            </thead>
+            <tbody id="masterBody"></tbody>
+          </table>
+        </div>
+
+        <div id="costing-tab2" class="costing-tab-content">
+          <div class="costing-filter-section">
+            <label style="font-weight: 800;">SELECT PROJECT CAPACITY (kW):</label>
+            <select id="boqKW" class="kw-select" onchange="renderBOQ()">
+              <option value="1">1 kW</option>
+              <option value="2">2 kW</option>
+              <option value="3" selected>3 kW</option>
+              <option value="5">5 kW</option>
+              <option value="10">10 kW</option>
+            </select>
+            <span style="color: #64748b; font-size: 0.85rem;">(Filters makes and items below)</span>
+          </div>
+
+          <button class="btn btn-add" onclick="addBOQRow()">+ Add Row to BOQ</button>
+          <button class="btn" style="background: #ef4444; color: white; margin-left: 10px;" onclick="clearBOQData()" title="Clear all BOQ rows">Clear BOQ</button>
+          <table class="costing-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">S.N.</th>
+                <th style="width:150px;">Select Make</th>
+                <th>Select Item</th>
+                <th style="width:80px;">Unit</th>
+                <th style="width:120px;">Rate (₹)</th>
+                <th style="width:100px;">Qty</th>
+                <th style="width:150px;">Amount (₹)</th>
+                <th style="width:50px;"></th>
+              </tr>
+            </thead>
+            <tbody id="boqBody"></tbody>
+          </table>
+
+          <div class="costing-total-display">
+            <span style="opacity: 0.7; font-size: 0.9rem;">GRAND TOTAL (Excl. GST)</span><br>
+            <span style="font-size: 2rem; font-weight: 800;">₹ <span id="grandTotal">0.00</span></span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="actions">
@@ -507,11 +675,13 @@
     </div>
   </div>
 
+  <div id="dataStatus" class="data-status">Data Saved ✓</div>
+
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <script>
-    const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","Structure Details","BOQ"];
+    const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","Structure Details","BOQ","Costing"];
     const tabs = document.getElementById('tabs');
     tabNames.forEach((name,i) => {
       const t = document.createElement('div');
@@ -691,6 +861,7 @@
       body.innerHTML = "";
       const list = Array.isArray(items) ? items : [];
       list.forEach(it => body.appendChild(loadRowTemplate(it)));
+      if (!body.children.length) body.appendChild(loadRowTemplate({}));
       calcLoadTotals();
     }
 
@@ -1003,6 +1174,7 @@
       const key = makeKey();
       if (!key) { if (!silent) alert("Customer Name required"); return; }
       const all = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+
       if (all[key] && !silent) {
         if (!confirm(`Customer '${key}' already exists. Overwrite?`)) return;
       }
@@ -1053,6 +1225,7 @@
       delete all[key];
       localStorage.setItem("solar_customers", JSON.stringify(all));
       loadCustomerList();
+
       if (loadedCustomerKey === key) {
         loadedCustomerKey = "";
         document.querySelector('input[name="custType"][value="new"]').checked = true;
@@ -1269,6 +1442,19 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
         ]
       ), "BOQ");
 
+      // Add Costing - BOQ
+      XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Costing - BOQ",
+        ["S.N.", "Make", "Item", "Unit", "Rate (₹)", "Qty", "Amount (₹)"],
+        boqRows.map((row, i) => {
+          const itemsForMake = masterItems.filter(m => m.kw === document.getElementById('boqKW').value && m.make === row.selectedMake);
+          const activeItem = itemsForMake.find(m => m.name === row.selectedItem) || {unit: '-', rate: 0};
+          const amount = activeItem.rate * row.qty;
+          return [
+            i + 1, row.selectedMake || '-', row.selectedItem || '-', activeItem.unit, activeItem.rate, row.qty, amount
+          ];
+        })
+      ), "Costing - BOQ");
+
       const filename = (d.customer.name || "solar-site-survey") + ".xlsx";
       XLSX.writeFile(wb, filename);
     }
@@ -1466,6 +1652,18 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
             ["GI Mounting Structure", d.boq.gi.spec, d.boq.gi.qty, d.boq.gi.unit, d.boq.gi.remark],
             ["Installation Charges", d.boq.install.spec, d.boq.install.qty, d.boq.install.unit, d.boq.install.remark]
           ]
+        },
+        {
+          name: "Costing - BOQ",
+          columns: ["S.N.", "Make", "Item", "Unit", "Rate (₹)", "Qty", "Amount (₹)"],
+          rows: boqRows.map((row, i) => {
+            const itemsForMake = masterItems.filter(m => m.kw === document.getElementById('boqKW').value && m.make === row.selectedMake);
+            const activeItem = itemsForMake.find(m => m.name === row.selectedItem) || {unit: '-', rate: 0};
+            const amount = activeItem.rate * row.qty;
+            return [
+              i + 1, row.selectedMake || '-', row.selectedItem || '-', activeItem.unit, activeItem.rate, row.qty, amount
+            ];
+          })
         }
       ];
 
@@ -1625,12 +1823,173 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
       hist.style.height = calc.offsetHeight + 'px';
     }
 
+    // Costing Functions
+    let masterItems = [
+      { kw: "3", make: "Adani", name: "TOPCON 570 Wp DCR Panels", unit: "Watt", rate: 24 },
+      { kw: "3", make: "Waree", name: "TOPCON 540 Wp DCR Panels", unit: "Watt", rate: 23.5 },
+      { kw: "3", make: "Luminus", name: "On Grid 1 Phase Inverter 3kVA", unit: "NOS", rate: 17750 },
+      { kw: "3", make: "Goodwe", name: "Smart Inverter 3kW Gen 4", unit: "NOS", rate: 16500 },
+      { kw: "3", make: "Standard", name: "3kW Structure GI (C-Channel)", unit: "Set", rate: 9000 },
+      { kw: "5", make: "Adani", name: "570 Wp Mono PERC", unit: "Watt", rate: 22 },
+      { kw: "5", make: "Feston", name: "On Grid 5kW Inverter", unit: "NOS", rate: 28000 },
+      { kw: "5", make: "Standard", name: "5kW Structure GI", unit: "Set", rate: 13000 }
+    ];
+
+    let boqRows = [{ selectedMake: "", selectedItem: "", qty: 1 }];
+
+    function switchCostingTab(n) {
+      document.getElementById('costing-tab1').classList.toggle('active', n === 1);
+      document.getElementById('costing-tab2').classList.toggle('active', n === 2);
+      document.getElementById('costing-t1-btn').classList.toggle('active', n === 1);
+      document.getElementById('costing-t2-btn').classList.toggle('active', n === 2);
+      if(n === 2) renderBOQ();
+    }
+
+    function renderMaster() {
+      const body = document.getElementById('masterBody');
+      body.innerHTML = '';
+      masterItems.forEach((item, i) => {
+        body.innerHTML += `
+          <tr>
+            <td>${i+1}</td>
+            <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'kw',this.innerText)">${item.kw}</span></td>
+            <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'make',this.innerText)">${item.make}</span></td>
+            <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'name',this.innerText)">${item.name}</span></td>
+            <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'unit',this.innerText)">${item.unit}</span></td>
+            <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'rate',this.innerText)">${item.rate}</span></td>
+            <td><button class="btn btn-del" onclick="delRow('master',${i})">×</button></td>
+          </tr>`;
+      });
+    }
+
+    function renderBOQ() {
+      const selectedKW = document.getElementById('boqKW').value;
+      const body = document.getElementById('boqBody');
+      body.innerHTML = '';
+      let grandTotal = 0;
+
+      const availableMakes = [...new Set(masterItems.filter(m => m.kw === selectedKW).map(m => m.make))];
+
+      boqRows.forEach((row, i) => {
+        const itemsForMake = masterItems.filter(m => m.kw === selectedKW && m.make === row.selectedMake);
+        const activeItem = itemsForMake.find(m => m.name === row.selectedItem) || {unit: '-', rate: 0};
+
+        const amount = activeItem.rate * row.qty;
+        grandTotal += amount;
+
+        body.innerHTML += `
+          <tr>
+            <td>${i+1}</td>
+            <td>
+              <select class="table-input" onchange="updateBOQ(${i}, 'selectedMake', this.value)">
+                <option value="">-- Select Make --</option>
+                ${availableMakes.map(m => `<option value="${m}" ${row.selectedMake === m ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+            </td>
+            <td>
+              <select class="table-input" onchange="updateBOQ(${i}, 'selectedItem', this.value)">
+                <option value="">-- Select Item --</option>
+                ${itemsForMake.map(itm => `<option value="${itm.name}" ${row.selectedItem === itm.name ? 'selected' : ''}>${itm.name}</option>`).join('')}
+              </select>
+            </td>
+            <td style="color:#64748b">${activeItem.unit}</td>
+            <td style="font-weight:600">₹ ${activeItem.rate}</td>
+            <td><input type="number" class="table-input" value="${row.qty}" onchange="updateBOQ(${i}, 'qty', this.value)" min="0" step="1"></td>
+            <td style="font-weight:800; color:var(--accent)">₹ ${amount.toLocaleString('en-IN')}</td>
+            <td><button class="btn btn-del" onclick="delRow('boq',${i})">×</button></td>
+          </tr>`;
+      });
+      document.getElementById('grandTotal').innerText = grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2});
+    }
+
+    function updateMaster(i, key, val) {
+      masterItems[i][key] = val;
+      saveMasterData();
+    }
+
+    function updateBOQ(i, key, val) {
+      boqRows[i][key] = val;
+      if(key === 'selectedMake') boqRows[i].selectedItem = "";
+      saveBOQData();
+      renderBOQ();
+    }
+
+    function addMasterRow() {
+      masterItems.push({ kw: "3", make: "New Make", name: "New Item", unit: "Nos", rate: 0 });
+      saveMasterData();
+      renderMaster();
+    }
+
+    function addBOQRow() {
+      boqRows.push({ selectedMake: "", selectedItem: "", qty: 1 });
+      saveBOQData();
+      renderBOQ();
+    }
+
+    function delRow(type, i) {
+      if(type === 'master') {
+        masterItems.splice(i, 1);
+        saveMasterData();
+        renderMaster();
+      }
+      else {
+        boqRows.splice(i, 1);
+        saveBOQData();
+        renderBOQ();
+      }
+    }
+
+    function saveMasterData() {
+      localStorage.setItem('boqMasterItems', JSON.stringify(masterItems));
+      showDataStatus();
+    }
+
+    function loadMasterData() {
+      const saved = localStorage.getItem('boqMasterItems');
+      if(saved) {
+        masterItems = JSON.parse(saved);
+      }
+    }
+
+    function saveBOQData() {
+      localStorage.setItem('boqRows', JSON.stringify(boqRows));
+      showDataStatus();
+    }
+
+    function loadBOQData() {
+      const saved = localStorage.getItem('boqRows');
+      if(saved) {
+        boqRows = JSON.parse(saved);
+      }
+    }
+
+    function showDataStatus() {
+      const status = document.getElementById('dataStatus');
+      if(status) {
+        status.classList.add('show');
+        setTimeout(() => status.classList.remove('show'), 2000);
+      }
+    }
+
+    function clearBOQData() {
+      if(confirm('Are you sure you want to clear all BOQ rows? Master items will be preserved.')) {
+        localStorage.removeItem('boqRows');
+        boqRows = [{ selectedMake: "", selectedItem: "", qty: 1 }];
+        renderBOQ();
+        showDataStatus();
+      }
+    }
+
     loadCustomerList();
+    loadMasterData();
+    loadBOQData();
+    renderMaster();
     syncCalcHeights();
     window.addEventListener('resize', syncCalcHeights);
   </script>
 </body>
 </html>
+
 
 
 
