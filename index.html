@@ -1252,11 +1252,13 @@
     function saveBackup() {
       const backupKey = `backup_${Date.now()}`;
       const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+      const savedCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
       all[backupKey] = {
         id: backupKey,
         label: makeBackupLabel(),
         createdAt: Date.now(),
         data: getFormData(),
+        allCustomers: savedCustomers,
         masterItems,
         boqRows
       };
@@ -1273,11 +1275,13 @@
         backup = all[select.value];
         if (!backup) { alert("Selected backup not found."); return; }
       } else {
+        const savedCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
         backup = {
           id: `backup_${Date.now()}`,
           label: makeBackupLabel(),
           createdAt: Date.now(),
           data: getFormData(),
+          allCustomers: savedCustomers,
           masterItems,
           boqRows
         };
@@ -1306,10 +1310,19 @@
             label: imported.label || makeBackupLabel(),
             createdAt: imported.createdAt || Date.now(),
             data: imported.data || getFormData(),
+            allCustomers: imported.allCustomers || {},
             masterItems: Array.isArray(imported.masterItems) ? imported.masterItems : masterItems,
             boqRows: Array.isArray(imported.boqRows) ? imported.boqRows : boqRows
           };
           localStorage.setItem("solar_backups", JSON.stringify(all));
+
+          if (imported.allCustomers && typeof imported.allCustomers === 'object') {
+            const existingCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+            const merged = { ...existingCustomers, ...imported.allCustomers };
+            localStorage.setItem("solar_customers", JSON.stringify(merged));
+            loadCustomerList();
+          }
+
           loadBackupList(backupKey);
           alert("Backup imported successfully.");
         } catch (error) {
