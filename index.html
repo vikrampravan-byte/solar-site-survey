@@ -341,6 +341,13 @@
       <button type="button" id="btnSaveLocal">Save (Local)</button>
       <button type="button" id="btnUpdateLocal" class="btn-outline" disabled>Save Changes</button>
       <button type="button" id="btnDeleteLocal">Delete Customer</button>
+      <select id="backupList"></select>
+      <button type="button" id="btnSaveBackup">Save Backup</button>
+      <button type="button" id="btnRestoreBackup" class="btn-outline" disabled>Restore Backup</button>
+      <button type="button" id="btnDeleteBackup" class="btn-outline" disabled>Delete Backup</button>
+      <button type="button" id="btnExportBackup" class="btn-outline">Export Backup</button>
+      <button type="button" id="btnImportBackup" class="btn-outline">Import Backup</button>
+      <input type="file" id="backupImportFile" accept="application/json" style="display:none">
     </div>
 
     <div class="tabs" id="tabs"></div>
@@ -1235,6 +1242,155 @@
       alert("Deleted");
     }
 
+    function makeBackupLabel() {
+      const name = cust_name.value.trim() || "Untitled";
+      const mobile = cust_mobile.value.trim();
+      const timestamp = new Date().toLocaleString();
+      return `${name}${mobile ? ` | ${mobile}` : ""} — ${timestamp}`;
+    }
+
+    function saveBackup() {
+      const backupKey = `backup_${Date.now()}`;
+      const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+      all[backupKey] = {
+        id: backupKey,
+        label: makeBackupLabel(),
+        createdAt: Date.now(),
+        data: getFormData(),
+        masterItems,
+        boqRows
+      };
+      localStorage.setItem("solar_backups", JSON.stringify(all));
+      loadBackupList(backupKey);
+      alert("Backup saved.");
+    }
+
+    function exportBackup() {
+      const select = document.getElementById("backupList");
+      const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+      let backup;
+      if (select && select.value) {
+        backup = all[select.value];
+        if (!backup) { alert("Selected backup not found."); return; }
+      } else {
+        backup = {
+          id: `backup_${Date.now()}`,
+          label: makeBackupLabel(),
+          createdAt: Date.now(),
+          data: getFormData(),
+          masterItems,
+          boqRows
+        };
+      }
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const filename = `${backup.id || 'backup'}.json`;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    function importBackupFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (!imported || typeof imported !== 'object') throw new Error('Invalid backup file');
+          const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+          const backupKey = imported.id && !all[imported.id] ? imported.id : `backup_${Date.now()}`;
+          all[backupKey] = {
+            id: backupKey,
+            label: imported.label || makeBackupLabel(),
+            createdAt: imported.createdAt || Date.now(),
+            data: imported.data || getFormData(),
+            masterItems: Array.isArray(imported.masterItems) ? imported.masterItems : masterItems,
+            boqRows: Array.isArray(imported.boqRows) ? imported.boqRows : boqRows
+          };
+          localStorage.setItem("solar_backups", JSON.stringify(all));
+          loadBackupList(backupKey);
+          alert("Backup imported successfully.");
+        } catch (error) {
+          alert(`Import failed: ${error.message}`);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function openImportBackup() {
+      const input = document.getElementById("backupImportFile");
+      if (input) {
+        input.value = "";
+        input.click();
+      }
+    }
+
+    function restoreBackup() {
+      const select = document.getElementById("backupList");
+      const key = select.value;
+      if (!key) { alert("Select a backup to restore."); return; }
+      const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+      const backup = all[key];
+      if (!backup) { alert("Backup not found."); return; }
+      if (!confirm("Restore this backup? This will replace current form data.")) return;
+      setFormData(backup.data);
+      if (Array.isArray(backup.masterItems)) masterItems = backup.masterItems;
+      if (Array.isArray(backup.boqRows)) boqRows = backup.boqRows;
+      renderMaster();
+      renderBOQ();
+      loadedCustomerKey = "";
+      document.querySelector('input[name="custType"][value="new"]').checked = true;
+      setControlsState();
+      showDataStatus();
+    }
+
+    function deleteBackup() {
+      const select = document.getElementById("backupList");
+      const key = select.value;
+      if (!key) { alert("Select a backup to delete."); return; }
+      const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+      if (!all[key]) { alert("Backup not found."); return; }
+      if (!confirm("Delete this backup? This cannot be undone.")) return;
+      delete all[key];
+      localStorage.setItem("solar_backups", JSON.stringify(all));
+      loadBackupList();
+      showDataStatus();
+    }
+
+    function setBackupButtonsState() {
+      const select = document.getElementById("backupList");
+      const hasSelection = select && select.value;
+      const restore = document.getElementById("btnRestoreBackup");
+      const del = document.getElementById("btnDeleteBackup");
+      if (restore) restore.disabled = !hasSelection;
+      if (del) del.disabled = !hasSelection;
+    }
+
+    function loadBackupList(selectKey="") {
+      const select = document.getElementById("backupList");
+      if (!select) return;
+      select.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select backup";
+      select.appendChild(placeholder);
+
+      const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
+      Object.keys(all)
+        .sort((a, b) => (all[a].createdAt || 0) - (all[b].createdAt || 0))
+        .forEach(key => {
+          const item = all[key];
+          const opt = document.createElement("option");
+          opt.value = key;
+          opt.textContent = item.label || key;
+          select.appendChild(opt);
+        });
+      if (selectKey) select.value = selectKey;
+      setBackupButtonsState();
+    }
+
     function loadCustomerList(selectKey="") {
       const list = document.getElementById("existingList");
       list.innerHTML = "";
@@ -1267,6 +1423,20 @@
     document.getElementById("btnUpdateLocal").onclick = () => saveExisting(false);
     document.getElementById("btnDeleteLocal").onclick = deleteLocal;
     document.getElementById("btnLoad").onclick = loadSelected;
+    document.getElementById("btnSaveBackup").onclick = saveBackup;
+    document.getElementById("btnRestoreBackup").onclick = restoreBackup;
+    document.getElementById("btnDeleteBackup").onclick = deleteBackup;
+    document.getElementById("btnExportBackup").onclick = exportBackup;
+    document.getElementById("btnImportBackup").onclick = openImportBackup;
+    const backupFileInput = document.getElementById("backupImportFile");
+    if (backupFileInput) {
+      backupFileInput.addEventListener("change", () => {
+        if (backupFileInput.files && backupFileInput.files[0]) {
+          importBackupFile(backupFileInput.files[0]);
+        }
+      });
+    }
+    document.getElementById("backupList").addEventListener("change", setBackupButtonsState);
     document.getElementById("existingList").addEventListener("change", () => {
       loadedCustomerKey = "";
       setControlsState();
@@ -1981,6 +2151,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
     }
 
     loadCustomerList();
+    loadBackupList();
     loadMasterData();
     loadBOQData();
     renderMaster();
