@@ -386,8 +386,20 @@
             <tr><td>IFSC Code</td><td><input id="cust_ifsc"></td></tr>
             <tr><td>UPI ID</td><td><input id="cust_upi"></td></tr>
             <tr>
+              <td>Aadhar Photo</td>
+              <td><input id="cust_aadhar_photo" type="file" accept="image/*" capture="environment"></td>
+            </tr>
+            <tr>
+              <td>Electricity Bill Photo</td>
+              <td><input id="cust_electricity_photo" type="file" accept="image/*" capture="environment"></td>
+            </tr>
+            <tr>
               <td>Passbook Photo</td>
               <td><input id="cust_passbook" type="file" accept="image/*" capture="environment"></td>
+            </tr>
+            <tr>
+              <td>Loan Residential Proof Photo</td>
+              <td><input id="cust_loan_proof_photo" type="file" accept="image/*" capture="environment"></td>
             </tr>
           </tbody>
         </table>
@@ -432,6 +444,21 @@
             <tr><td>Existing Solar Installed</td><td><input id="site_existing_solar"></td></tr>
             <tr><td>Survey Date</td><td><input id="site_date" type="date"></td></tr>
             <tr><td>Surveyed By</td><td><input id="site_by"></td></tr>
+            <tr>
+              <td>Site Location (Latitude)</td>
+              <td>
+                <input id="site_latitude" placeholder="Click 'Get Location' button" readonly>
+                <button type="button" id="btnGetLocation" style="margin-top:6px; padding:6px 12px; background:#f05a28; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Get Location</button>
+              </td>
+            </tr>
+            <tr>
+              <td>Site Location (Longitude)</td>
+              <td><input id="site_longitude" placeholder="Auto-filled with Get Location" readonly></td>
+            </tr>
+            <tr>
+              <td>Site Photo (with Location)</td>
+              <td><input id="site_location_photo" type="file" accept="image/*" capture="environment"></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -920,7 +947,10 @@
           acc: cust_acc.value,
           ifsc: cust_ifsc.value,
           upi: cust_upi.value,
-          passbook: (cust_passbook.files[0] || {}).name || ""
+          passbook: (cust_passbook.files[0] || {}).name || "",
+          aadharPhoto: (cust_aadhar_photo.files[0] || {}).name || "",
+          electricityPhoto: (cust_electricity_photo.files[0] || {}).name || "",
+          loanProofPhoto: (cust_loan_proof_photo.files[0] || {}).name || ""
         },
         site: {
           address: site_address.value,
@@ -937,7 +967,10 @@
           bill: site_bill.value,
           existingSolar: site_existing_solar.value,
           date: site_date.value,
-          surveyedBy: site_by.value
+          surveyedBy: site_by.value,
+          latitude: site_latitude.value,
+          longitude: site_longitude.value,
+          locationPhoto: (site_location_photo.files[0] || {}).name || ""
         },
         loadCalc: {
           copyMode: (document.getElementById("load_copy_mode") || {}).value || "diversified",
@@ -1035,6 +1068,8 @@
       site_existing_solar.value = s.existingSolar || '';
       site_date.value = s.date || '';
       site_by.value = s.surveyedBy || '';
+      site_latitude.value = s.latitude || '';
+      site_longitude.value = s.longitude || '';
 
       const copyModeEl = document.getElementById("load_copy_mode");
       if (copyModeEl) copyModeEl.value = lc.copyMode || "diversified";
@@ -1249,10 +1284,28 @@
       return `${name}${mobile ? ` | ${mobile}` : ""} — ${timestamp}`;
     }
 
-    function saveBackup() {
+    function fileToBase64(file) {
+      return new Promise((resolve) => {
+        if (!file) { resolve(null); return; }
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function saveBackup() {
       const backupKey = `backup_${Date.now()}`;
       const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
       const savedCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+      
+      const images = {
+        aadharPhoto: await fileToBase64(cust_aadhar_photo.files[0] || null),
+        electricityPhoto: await fileToBase64(cust_electricity_photo.files[0] || null),
+        passbookPhoto: await fileToBase64(cust_passbook.files[0] || null),
+        loanProofPhoto: await fileToBase64(cust_loan_proof_photo.files[0] || null),
+        siteLocationPhoto: await fileToBase64(site_location_photo.files[0] || null)
+      };
+      
       all[backupKey] = {
         id: backupKey,
         label: makeBackupLabel(),
@@ -1260,14 +1313,15 @@
         data: getFormData(),
         allCustomers: savedCustomers,
         masterItems,
-        boqRows
+        boqRows,
+        images
       };
       localStorage.setItem("solar_backups", JSON.stringify(all));
       loadBackupList(backupKey);
-      alert("Backup saved.");
+      alert("Backup saved (with photos).");
     }
 
-    function exportBackup() {
+    async function exportBackup() {
       const select = document.getElementById("backupList");
       const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
       let backup;
@@ -1276,6 +1330,13 @@
         if (!backup) { alert("Selected backup not found."); return; }
       } else {
         const savedCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+        const images = {
+          aadharPhoto: await fileToBase64(cust_aadhar_photo.files[0] || null),
+          electricityPhoto: await fileToBase64(cust_electricity_photo.files[0] || null),
+          passbookPhoto: await fileToBase64(cust_passbook.files[0] || null),
+          loanProofPhoto: await fileToBase64(cust_loan_proof_photo.files[0] || null),
+          siteLocationPhoto: await fileToBase64(site_location_photo.files[0] || null)
+        };
         backup = {
           id: `backup_${Date.now()}`,
           label: makeBackupLabel(),
@@ -1283,7 +1344,8 @@
           data: getFormData(),
           allCustomers: savedCustomers,
           masterItems,
-          boqRows
+          boqRows,
+          images
         };
       }
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
@@ -1312,7 +1374,8 @@
             data: imported.data || getFormData(),
             allCustomers: imported.allCustomers || {},
             masterItems: Array.isArray(imported.masterItems) ? imported.masterItems : masterItems,
-            boqRows: Array.isArray(imported.boqRows) ? imported.boqRows : boqRows
+            boqRows: Array.isArray(imported.boqRows) ? imported.boqRows : boqRows,
+            images: imported.images || {}
           };
           localStorage.setItem("solar_backups", JSON.stringify(all));
 
@@ -1323,8 +1386,12 @@
             loadCustomerList();
           }
 
+          if (imported.images) {
+            localStorage.setItem(`backupImages_${backupKey}`, JSON.stringify(imported.images));
+          }
+
           loadBackupList(backupKey);
-          alert("Backup imported successfully.");
+          alert("Backup imported successfully (with photos).");
         } catch (error) {
           alert(`Import failed: ${error.message}`);
         }
@@ -1353,10 +1420,56 @@
       if (Array.isArray(backup.boqRows)) boqRows = backup.boqRows;
       renderMaster();
       renderBOQ();
+      
+      const images = backup.images || JSON.parse(localStorage.getItem(`backupImages_${key}`) || "{}");
+      if (images.aadharPhoto) openPhotoViewer("Aadhar Photo", images.aadharPhoto);
+      
       loadedCustomerKey = "";
       document.querySelector('input[name="custType"][value="new"]').checked = true;
       setControlsState();
       showDataStatus();
+    }
+
+    function openPhotoViewer(title, base64Data) {
+      if (!base64Data) return;
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+        z-index: 9999; cursor: pointer;
+      `;
+      const container = document.createElement('div');
+      container.style.cssText = `
+        background: white; padding: 20px; border-radius: 12px; max-width: 90vw; max-height: 90vh;
+        display: flex; flex-direction: column; gap: 10px;
+      `;
+      const titleEl = document.createElement('h3');
+      titleEl.textContent = title;
+      titleEl.style.cssText = `margin: 0; color: #1f160f; font-weight: 600;`;
+      const img = document.createElement('img');
+      img.src = base64Data;
+      img.style.cssText = `max-width: 100%; max-height: 70vh; object-fit: contain;`;
+      const downloadBtn = document.createElement('button');
+      downloadBtn.textContent = 'Download Photo';
+      downloadBtn.style.cssText = `padding: 8px 16px; background: #f05a28; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;`;
+      downloadBtn.onclick = (e) => {
+        e.stopPropagation();
+        const link = document.createElement('a');
+        link.href = base64Data;
+        link.download = `${title.replace(/\s+/g, '_')}.png`;
+        link.click();
+      };
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.style.cssText = `padding: 8px 16px; background: #888; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;`;
+      closeBtn.onclick = () => modal.remove();
+      container.appendChild(titleEl);
+      container.appendChild(img);
+      container.appendChild(downloadBtn);
+      container.appendChild(closeBtn);
+      modal.appendChild(container);
+      modal.onclick = () => modal.remove();
+      document.body.appendChild(modal);
     }
 
     function deleteBackup() {
@@ -1367,6 +1480,7 @@
       if (!all[key]) { alert("Backup not found."); return; }
       if (!confirm("Delete this backup? This cannot be undone.")) return;
       delete all[key];
+      localStorage.removeItem(`backupImages_${key}`);
       localStorage.setItem("solar_backups", JSON.stringify(all));
       loadBackupList();
       showDataStatus();
@@ -2163,6 +2277,31 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
       }
     }
 
+    function getLocationCoordinates() {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      document.getElementById("btnGetLocation").textContent = "Getting location...";
+      document.getElementById("btnGetLocation").disabled = true;
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          const lat = position.coords.latitude.toFixed(6);
+          const lon = position.coords.longitude.toFixed(6);
+          document.getElementById("site_latitude").value = lat;
+          document.getElementById("site_longitude").value = lon;
+          document.getElementById("btnGetLocation").textContent = "Get Location";
+          document.getElementById("btnGetLocation").disabled = false;
+          alert(`Location captured: ${lat}, ${lon}`);
+        },
+        function(error) {
+          document.getElementById("btnGetLocation").textContent = "Get Location";
+          document.getElementById("btnGetLocation").disabled = false;
+          alert(`Error getting location: ${error.message}`);
+        }
+      );
+    }
+
     loadCustomerList();
     loadBackupList();
     loadMasterData();
@@ -2170,6 +2309,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
     renderMaster();
     syncCalcHeights();
     window.addEventListener('resize', syncCalcHeights);
+    document.getElementById("btnGetLocation").onclick = getLocationCoordinates;
   </script>
 </body>
 </html>
