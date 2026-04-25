@@ -345,9 +345,9 @@
       <button type="button" id="btnSaveBackup">Save Backup</button>
       <button type="button" id="btnRestoreBackup" class="btn-outline" disabled>Restore Backup</button>
       <button type="button" id="btnDeleteBackup" class="btn-outline" disabled>Delete Backup</button>
-      <button type="button" id="btnExportBackup" class="btn-outline">Export Backup</button>
+      <button type="button" id="btnExportBackup" class="btn-outline">Export ZIP Backup</button>
       <button type="button" id="btnImportBackup" class="btn-outline">Import Backup</button>
-      <input type="file" id="backupImportFile" accept="application/json" style="display:none">
+      <input type="file" id="backupImportFile" accept=".zip,application/zip,.json,application/json" style="display:none">
     </div>
 
     <div class="tabs" id="tabs"></div>
@@ -715,6 +715,69 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <script>
+    document.querySelectorAll("input[name='custType']").forEach(radio => {
+      radio.addEventListener("change", function () {
+
+        if (this.value === "new") {
+          // Clear full form (if you have function)
+          if (typeof clearForm === "function") clearForm();
+
+          // ✅ Clear images
+          clearAllImages();
+
+          // Disable existing list
+          document.getElementById("existingList").disabled = true;
+        }
+
+        if (this.value === "existing") {
+          document.getElementById("existingList").disabled = false;
+        }
+
+      });
+    });
+
+    let imageStore = {
+      aadharPhoto: "",
+      electricityPhoto: "",
+      passbookPhoto: "",
+      loanProofPhoto: "",
+      siteLocationPhoto: ""
+    };
+
+    function handleImageInput(inputId, key) {
+      const input = document.getElementById(inputId);
+
+      input.addEventListener("change", function () {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          imageStore[key] = e.target.result; // ✅ STORE BASE64
+
+          // Optional preview
+          let preview = document.getElementById(inputId + "_preview");
+          if (!preview) {
+            preview = document.createElement("img");
+            preview.id = inputId + "_preview";
+            preview.style.width = "120px";
+            preview.style.display = "block";
+            preview.style.marginTop = "5px";
+            input.parentNode.appendChild(preview);
+          }
+          preview.src = imageStore[key];
+        };
+
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    handleImageInput("cust_aadhar_photo", "aadharPhoto");
+    handleImageInput("cust_electricity_photo", "electricityPhoto");
+    handleImageInput("cust_passbook", "passbookPhoto");
+    handleImageInput("cust_loan_proof_photo", "loanProofPhoto");
+    handleImageInput("site_location_photo", "siteLocationPhoto");
+
     const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","Structure Details","BOQ","Costing"];
     const tabs = document.getElementById('tabs');
     tabNames.forEach((name,i) => {
@@ -947,10 +1010,10 @@
           acc: cust_acc.value,
           ifsc: cust_ifsc.value,
           upi: cust_upi.value,
-          passbook: (cust_passbook.files[0] || {}).name || "",
-          aadharPhoto: (cust_aadhar_photo.files[0] || {}).name || "",
-          electricityPhoto: (cust_electricity_photo.files[0] || {}).name || "",
-          loanProofPhoto: (cust_loan_proof_photo.files[0] || {}).name || ""
+          passbookPhoto: imageStore.passbookPhoto,
+          aadharPhoto: imageStore.aadharPhoto,
+          electricityPhoto: imageStore.electricityPhoto,
+          loanProofPhoto: imageStore.loanProofPhoto
         },
         site: {
           address: site_address.value,
@@ -970,7 +1033,7 @@
           surveyedBy: site_by.value,
           latitude: site_latitude.value,
           longitude: site_longitude.value,
-          locationPhoto: (site_location_photo.files[0] || {}).name || ""
+          locationPhoto: imageStore.siteLocationPhoto
         },
         loadCalc: {
           copyMode: (document.getElementById("load_copy_mode") || {}).value || "diversified",
@@ -1026,6 +1089,7 @@
     }
 
     function setFormData(data) {
+      clearAllImages();
       if (!data) return;
       const c = data.customer || {};
       const s = data.site || {};
@@ -1034,6 +1098,20 @@
       const st = data.structure || {};
       const cb = data.cable || {};
       const b = data.boq || {};
+      
+      // ✅ Restore images into memory
+      imageStore.aadharPhoto = c.aadharPhoto || "";
+      imageStore.electricityPhoto = c.electricityPhoto || "";
+      imageStore.passbookPhoto = c.passbookPhoto || "";
+      imageStore.loanProofPhoto = c.loanProofPhoto || "";
+      imageStore.siteLocationPhoto = s.locationPhoto || "";
+
+      // ✅ Show preview again
+      restoreImagePreview("cust_aadhar_photo", imageStore.aadharPhoto);
+      restoreImagePreview("cust_electricity_photo", imageStore.electricityPhoto);
+      restoreImagePreview("cust_passbook", imageStore.passbookPhoto);
+      restoreImagePreview("cust_loan_proof_photo", imageStore.loanProofPhoto);
+      restoreImagePreview("site_location_photo", imageStore.siteLocationPhoto);
 
       cust_name.value = c.name || '';
       cust_father_company.value = c.fatherCompany || '';
@@ -1157,6 +1235,24 @@
       boq_install_qty.value = (b.install || {}).qty || '';
       boq_install_unit.value = (b.install || {}).unit || '';
       boq_install_remark.value = (b.install || {}).remark || '';
+    }
+
+    function restoreImagePreview(inputId, base64) {
+      if (!base64) return;
+
+      let preview = document.getElementById(inputId + "_preview");
+
+      if (!preview) {
+        preview = document.createElement("img");
+        preview.id = inputId + "_preview";
+        preview.style.width = "120px";
+        preview.style.display = "block";
+        preview.style.marginTop = "5px";
+
+        document.getElementById(inputId).parentNode.appendChild(preview);
+      }
+
+      preview.src = base64;
     }
 
     function makeKey() {
@@ -1298,14 +1394,6 @@
       const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
       const savedCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
       
-      const images = {
-        aadharPhoto: await fileToBase64(cust_aadhar_photo.files[0] || null),
-        electricityPhoto: await fileToBase64(cust_electricity_photo.files[0] || null),
-        passbookPhoto: await fileToBase64(cust_passbook.files[0] || null),
-        loanProofPhoto: await fileToBase64(cust_loan_proof_photo.files[0] || null),
-        siteLocationPhoto: await fileToBase64(site_location_photo.files[0] || null)
-      };
-      
       all[backupKey] = {
         id: backupKey,
         label: makeBackupLabel(),
@@ -1313,12 +1401,193 @@
         data: getFormData(),
         allCustomers: savedCustomers,
         masterItems,
-        boqRows,
-        images
+        boqRows
       };
-      localStorage.setItem("solar_backups", JSON.stringify(all));
-      loadBackupList(backupKey);
-      alert("Backup saved (with photos).");
+      try {
+        localStorage.setItem("solar_backups", JSON.stringify(all));
+        loadBackupList(backupKey);
+        alert("Backup saved. Click 'Export ZIP Backup' to save photos.");
+      } catch (error) {
+        alert(`Backup error: ${error.message}. Try exporting instead.`);
+      }
+    }
+    function extFromMime(mime) {
+      if (!mime) return "";
+      const m = String(mime).toLowerCase();
+      if (m.includes("jpeg") || m.includes("jpg")) return ".jpg";
+      if (m.includes("png")) return ".png";
+      if (m.includes("webp")) return ".webp";
+      if (m.includes("gif")) return ".gif";
+      return "";
+    }
+
+    function mimeFromFilename(name) {
+      const n = String(name || "").toLowerCase();
+      if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+      if (n.endsWith(".png")) return "image/png";
+      if (n.endsWith(".webp")) return "image/webp";
+      if (n.endsWith(".gif")) return "image/gif";
+      if (n.endsWith(".json")) return "application/json";
+      return "application/octet-stream";
+    }
+
+    const CRC32_TABLE = (() => {
+      const table = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+        table[i] = c >>> 0;
+      }
+      return table;
+    })();
+
+    function crc32(bytes) {
+      let crc = 0 ^ -1;
+      for (let i = 0; i < bytes.length; i++) {
+        crc = (crc >>> 8) ^ CRC32_TABLE[(crc ^ bytes[i]) & 0xff];
+      }
+      return (crc ^ -1) >>> 0;
+    }
+
+    function toDosDateTime(date = new Date()) {
+      const d = date instanceof Date ? date : new Date();
+      const year = Math.max(1980, d.getFullYear());
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      const hours = d.getHours();
+      const minutes = d.getMinutes();
+      const seconds = Math.floor(d.getSeconds() / 2);
+      const dosDate = ((year - 1980) << 9) | (month << 5) | day;
+      const dosTime = (hours << 11) | (minutes << 5) | seconds;
+      return { dosDate, dosTime };
+    }
+
+    function buildZipStore(entries) {
+      const encoder = new TextEncoder();
+      const { dosDate, dosTime } = toDosDateTime(new Date());
+
+      const localParts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      for (const entry of entries) {
+        const nameBytes = encoder.encode(entry.name);
+        const dataBytes = entry.data instanceof Uint8Array ? entry.data : new Uint8Array(entry.data);
+        const crc = crc32(dataBytes);
+
+        const local = new Uint8Array(30 + nameBytes.length);
+        const lv = new DataView(local.buffer);
+        lv.setUint32(0, 0x04034b50, true);
+        lv.setUint16(4, 20, true);
+        lv.setUint16(6, 0, true);
+        lv.setUint16(8, 0, true);
+        lv.setUint16(10, dosTime, true);
+        lv.setUint16(12, dosDate, true);
+        lv.setUint32(14, crc, true);
+        lv.setUint32(18, dataBytes.length, true);
+        lv.setUint32(22, dataBytes.length, true);
+        lv.setUint16(26, nameBytes.length, true);
+        lv.setUint16(28, 0, true);
+        local.set(nameBytes, 30);
+
+        const central = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(central.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0, true);
+        cv.setUint16(10, 0, true);
+        cv.setUint16(12, dosTime, true);
+        cv.setUint16(14, dosDate, true);
+        cv.setUint32(16, crc, true);
+        cv.setUint32(20, dataBytes.length, true);
+        cv.setUint32(24, dataBytes.length, true);
+        cv.setUint16(28, nameBytes.length, true);
+        cv.setUint16(30, 0, true);
+        cv.setUint16(32, 0, true);
+        cv.setUint16(34, 0, true);
+        cv.setUint16(36, 0, true);
+        cv.setUint32(38, 0, true);
+        cv.setUint32(42, offset, true);
+        central.set(nameBytes, 46);
+
+        localParts.push(local, dataBytes);
+        centralParts.push(central);
+        offset += local.length + dataBytes.length;
+      }
+
+      const centralOffset = offset;
+      let centralSize = 0;
+      for (const p of centralParts) centralSize += p.length;
+
+      const end = new Uint8Array(22);
+      const ev = new DataView(end.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(4, 0, true);
+      ev.setUint16(6, 0, true);
+      ev.setUint16(8, entries.length, true);
+      ev.setUint16(10, entries.length, true);
+      ev.setUint32(12, centralSize, true);
+      ev.setUint32(16, centralOffset, true);
+      ev.setUint16(20, 0, true);
+
+      return new Blob([...localParts, ...centralParts, end], { type: "application/zip" });
+    }
+
+    async function readZipStoreEntries(file) {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      const view = new DataView(buffer);
+      const decoder = new TextDecoder();
+
+      const out = {};
+      let i = 0;
+      while (i + 30 <= bytes.length) {
+        const sig = view.getUint32(i, true);
+        if (sig !== 0x04034b50) break;
+
+        const method = view.getUint16(i + 8, true);
+        const compSize = view.getUint32(i + 18, true);
+        const uncompSize = view.getUint32(i + 22, true);
+        const nameLen = view.getUint16(i + 26, true);
+        const extraLen = view.getUint16(i + 28, true);
+        const nameStart = i + 30;
+        const nameEnd = nameStart + nameLen;
+        const dataStart = nameEnd + extraLen;
+        const dataEnd = dataStart + compSize;
+
+        const name = decoder.decode(bytes.slice(nameStart, nameEnd));
+        if (dataEnd > bytes.length) throw new Error("ZIP parse error (unexpected end)");
+
+        if (method !== 0) {
+          throw new Error("ZIP import supports only STORE (no compression). Re-export ZIP from this form.");
+        }
+        if (compSize !== uncompSize) {
+          throw new Error("ZIP parse error (size mismatch). Re-export ZIP from this form.");
+        }
+
+        out[name] = bytes.slice(dataStart, dataEnd);
+        i = dataEnd;
+      }
+      return out;
+    }
+
+    function downloadBlob(blob, filename) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    function bytesToDataURL(bytes, mime) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(new Blob([bytes], { type: mime || "application/octet-stream" }));
+      });
     }
 
     async function exportBackup() {
@@ -1330,13 +1599,6 @@
         if (!backup) { alert("Selected backup not found."); return; }
       } else {
         const savedCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
-        const images = {
-          aadharPhoto: await fileToBase64(cust_aadhar_photo.files[0] || null),
-          electricityPhoto: await fileToBase64(cust_electricity_photo.files[0] || null),
-          passbookPhoto: await fileToBase64(cust_passbook.files[0] || null),
-          loanProofPhoto: await fileToBase64(cust_loan_proof_photo.files[0] || null),
-          siteLocationPhoto: await fileToBase64(site_location_photo.files[0] || null)
-        };
         backup = {
           id: `backup_${Date.now()}`,
           label: makeBackupLabel(),
@@ -1344,61 +1606,120 @@
           data: getFormData(),
           allCustomers: savedCustomers,
           masterItems,
-          boqRows,
-          images
+          boqRows
         };
       }
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-      const filename = `${backup.id || 'backup'}.json`;
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+
+      const zipEntries = [];
+
+      const imageFiles = {
+        aadharPhoto: cust_aadhar_photo?.files?.[0] || null,
+        electricityPhoto: cust_electricity_photo?.files?.[0] || null,
+        passbookPhoto: cust_passbook?.files?.[0] || null,
+        loanProofPhoto: cust_loan_proof_photo?.files?.[0] || null,
+        siteLocationPhoto: site_location_photo?.files?.[0] || null
+      };
+
+      const imagesManifest = {};
+      for (const [key, file] of Object.entries(imageFiles)) {
+        if (!file) continue;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const ext = extFromMime(file.type) || (file.name ? (file.name.match(/\.[a-z0-9]+$/i)?.[0] || "") : "") || ".bin";
+        const safeExt = ext.startsWith(".") ? ext : `.${ext}`;
+        const path = `images/${key}${safeExt}`;
+        zipEntries.push({ name: path, data: bytes });
+        imagesManifest[key] = { file: path, mime: file.type || mimeFromFilename(path) };
+      }
+
+      backup.images = imagesManifest;
+
+      const backupJson = JSON.stringify(backup, null, 2);
+      zipEntries.unshift({ name: "backup.json", data: new TextEncoder().encode(backupJson) });
+
+      const zipBlob = buildZipStore(zipEntries);
+      const filename = `${backup.id || "backup"}.zip`;
+      downloadBlob(zipBlob, filename);
+      alert("ZIP backup exported with photos.");
+    }
+    function applyImportedBackup(imported) {
+      if (!imported || typeof imported !== "object") throw new Error("Invalid backup file");
+
+      if (imported.allCustomers && typeof imported.allCustomers === "object") {
+        const existingCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
+        const merged = { ...existingCustomers, ...imported.allCustomers };
+        localStorage.setItem("solar_customers", JSON.stringify(merged));
+        loadCustomerList();
+      }
+
+      if (imported.images) {
+        window.importedBackupImages = imported.images;
+      }
+
+      if (imported.data) {
+        setFormData(imported.data);
+      }
+
+      if (Array.isArray(imported.masterItems)) {
+        masterItems = imported.masterItems;
+        renderMaster();
+      }
+
+      if (Array.isArray(imported.boqRows)) {
+        boqRows = imported.boqRows;
+        renderBOQ();
+      }
+
+      alert("Backup imported successfully! Photos are ready to view.");
+    }
+
+    async function importZipBackupFile(file) {
+      const entries = await readZipStoreEntries(file);
+      const backupBytes = entries["backup.json"];
+      if (!backupBytes) throw new Error("ZIP is missing backup.json");
+
+      const imported = JSON.parse(new TextDecoder().decode(backupBytes));
+      if (!imported || typeof imported !== "object") throw new Error("Invalid backup.json inside ZIP");
+
+      const images = imported.images && typeof imported.images === "object" ? imported.images : {};
+      const resolvedImages = {};
+
+      for (const [key, value] of Object.entries(images)) {
+        if (!value) continue;
+        if (typeof value === "string" && value.startsWith("data:")) {
+          resolvedImages[key] = value;
+          continue;
+        }
+        if (typeof value === "object" && value.file && entries[value.file]) {
+          const mime = value.mime || mimeFromFilename(value.file);
+          resolvedImages[key] = await bytesToDataURL(entries[value.file], mime);
+        }
+      }
+
+      imported.images = resolvedImages;
+      applyImportedBackup(imported);
     }
 
     function importBackupFile(file) {
+      const name = (file && file.name) ? file.name.toLowerCase() : "";
+      const type = (file && file.type) ? file.type.toLowerCase() : "";
+      const isZip = name.endsWith(".zip") || type.includes("zip");
+
+      if (isZip) {
+        importZipBackupFile(file).catch((error) => alert(`Import failed: ${error.message}`));
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = function(event) {
         try {
           const imported = JSON.parse(event.target.result);
-          if (!imported || typeof imported !== 'object') throw new Error('Invalid backup file');
-          const all = JSON.parse(localStorage.getItem("solar_backups") || "{}");
-          const backupKey = imported.id && !all[imported.id] ? imported.id : `backup_${Date.now()}`;
-          all[backupKey] = {
-            id: backupKey,
-            label: imported.label || makeBackupLabel(),
-            createdAt: imported.createdAt || Date.now(),
-            data: imported.data || getFormData(),
-            allCustomers: imported.allCustomers || {},
-            masterItems: Array.isArray(imported.masterItems) ? imported.masterItems : masterItems,
-            boqRows: Array.isArray(imported.boqRows) ? imported.boqRows : boqRows,
-            images: imported.images || {}
-          };
-          localStorage.setItem("solar_backups", JSON.stringify(all));
-
-          if (imported.allCustomers && typeof imported.allCustomers === 'object') {
-            const existingCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
-            const merged = { ...existingCustomers, ...imported.allCustomers };
-            localStorage.setItem("solar_customers", JSON.stringify(merged));
-            loadCustomerList();
-          }
-
-          if (imported.images) {
-            localStorage.setItem(`backupImages_${backupKey}`, JSON.stringify(imported.images));
-          }
-
-          loadBackupList(backupKey);
-          alert("Backup imported successfully (with photos).");
+          applyImportedBackup(imported);
         } catch (error) {
           alert(`Import failed: ${error.message}`);
         }
       };
       reader.readAsText(file);
     }
-
     function openImportBackup() {
       const input = document.getElementById("backupImportFile");
       if (input) {
@@ -1421,8 +1742,10 @@
       renderMaster();
       renderBOQ();
       
-      const images = backup.images || JSON.parse(localStorage.getItem(`backupImages_${key}`) || "{}");
-      if (images.aadharPhoto) openPhotoViewer("Aadhar Photo", images.aadharPhoto);
+      const images = window.importedBackupImages || {};
+      if (images.aadharPhoto) {
+        setTimeout(() => openPhotoViewer("Aadhar Photo", images.aadharPhoto), 500);
+      }
       
       loadedCustomerKey = "";
       document.querySelector('input[name="custType"][value="new"]').checked = true;
@@ -1480,7 +1803,6 @@
       if (!all[key]) { alert("Backup not found."); return; }
       if (!confirm("Delete this backup? This cannot be undone.")) return;
       delete all[key];
-      localStorage.removeItem(`backupImages_${key}`);
       localStorage.setItem("solar_backups", JSON.stringify(all));
       loadBackupList();
       showDataStatus();
@@ -1645,7 +1967,7 @@
           ["Account Number", d.customer.acc],
           ["IFSC Code", d.customer.ifsc],
           ["UPI ID", d.customer.upi],
-          ["Passbook Photo", d.customer.passbook]
+          //["Passbook Photo", d.customer.passbook]
         ]
       ), "Customer Details");
 
@@ -1756,8 +2078,42 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
       XLSX.writeFile(wb, filename);
     }
 
+    async function addPhoto(doc, title, base64) {
+      if (!base64) return;
+
+      doc.addPage();
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+
+      doc.setFontSize(14);
+      doc.text(title, margin, 30);
+
+      const img = new Image();
+      img.src = base64;
+
+      await new Promise(resolve => img.onload = resolve);
+
+      const maxWidth = pageWidth - (margin * 2);
+      const maxHeight = pageHeight - 80;
+
+      let imgWidth = maxWidth;
+      let imgHeight = imgWidth / (img.width / img.height);
+
+      if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = imgHeight * (img.width / img.height);
+      }
+
+      const x = (pageWidth - imgWidth) / 2;
+      const y = 50;
+
+      doc.addImage(base64, "JPEG", x, y, imgWidth, imgHeight);
+    }
+
     // Export PDF (each tab as a page)
-    function exportPdf() {
+    async function exportPdf() {
       const d = getFormData();
       const { jsPDF } = window.jspdf || {};
       if (!jsPDF) { alert("PDF library not loaded"); return; }
@@ -1856,7 +2212,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
             ["Account Number", d.customer.acc],
             ["IFSC Code", d.customer.ifsc],
             ["UPI ID", d.customer.upi],
-            ["Passbook Photo", d.customer.passbook]
+            //["Passbook Photo", d.customer.passbook]
           ]
         },
         {
@@ -1970,6 +2326,13 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
       });
 
       const filename = (d.customer.name || "solar-site-survey") + ".pdf";
+      await addPhoto(doc, "Aadhar Photo", d.customer.aadharPhoto);
+      await addPhoto(doc, "Electricity Bill Photo", d.customer.electricityPhoto);
+      await addPhoto(doc, "Passbook Photo", d.customer.passbookPhoto);
+      await addPhoto(doc, "Loan Residential Proof Photo", d.customer.loanProofPhoto);
+      await addPhoto(doc, "Site Photo", d.site.locationPhoto);
+
+
       doc.save(filename);
     }
 
@@ -2310,18 +2673,32 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
     syncCalcHeights();
     window.addEventListener('resize', syncCalcHeights);
     document.getElementById("btnGetLocation").onclick = getLocationCoordinates;
+    
+    function clearAllImages() {
+      // Reset stored images
+      imageStore = {
+        aadharPhoto: "",
+        electricityPhoto: "",
+        passbookPhoto: "",
+        loanProofPhoto: "",
+        siteLocationPhoto: ""
+      };
+
+      // Clear file inputs
+      [
+        "cust_aadhar_photo",
+        "cust_electricity_photo",
+        "cust_passbook",
+        "cust_loan_proof_photo",
+        "site_location_photo"
+      ].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = "";
+      });
+
+      // Remove preview images
+      document.querySelectorAll("img[id$='_preview']").forEach(img => img.remove());
+    }
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
