@@ -731,6 +731,10 @@
 
         if (this.value === "existing") {
           document.getElementById("existingList").disabled = false;
+          loadedCustomerKey = "";
+          document.getElementById("existingList").value = "";
+          clearForNewCustomer();
+          setControlsState();
         }
 
       });
@@ -2696,3 +2700,15 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
