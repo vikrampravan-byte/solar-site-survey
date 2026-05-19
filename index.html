@@ -1913,12 +1913,6 @@
         setControlsState();
       });
     }
-    // Auto-save every 15 seconds
-    setInterval(() => {
-      const name = cust_name.value.trim();
-      if (!name) return;
-      saveLocal(true);
-    }, 15000);    // Export Excel
     function makeSheetWithHeading(d, sectionName, colHeaders, bodyRows) {
       const cols = colHeaders.length;
       const customerLine = `Customer: ${d.customer.name || "-"}   |   Mobile: ${d.customer.mobile || "-"}`;
