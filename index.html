@@ -1,6 +1,249 @@
 <!doctype html>
 <html>
 <head>
+
+  <style>
+        body {
+          margin: 0;
+          padding: 0;
+          display: flex;
+          min-height: 100vh;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background-color: #1e1e1e;
+          color: #ffffff;
+          overflow: auto;
+        }
+
+        #sidebar {
+          width: 410px;
+          background-color: var(--card);
+          color: var(--text);
+          padding: 20px;
+          box-shadow: 0 6px 18px rgba(31,22,15,0.06);
+          z-index: 10;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          overflow-y: auto;
+        }
+
+        #canvas-container {
+            flex-grow: 1;
+            position: relative;
+            background-color: #1a1a1a;
+        }
+
+        h2, h3 {
+            margin: 0;
+            color: #4da6ff;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: #ddd;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: #4da6ff;
+        }
+
+        .structure-card {
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .structure-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 6px;
+        }
+
+        .structure-header span {
+            font-weight: bold;
+            color: #81d4fa;
+        }
+
+        .btn-danger {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-danger:hover { background-color: #c62828; }
+
+        .btn-primary {
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-primary:hover { background-color: #0277bd; }
+
+        .dashboard {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .dashboard p {
+            margin: 8px 0;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .highlight-green { color: #4CAF50; font-weight: bold; }
+        .highlight-blue { color: #4da6ff; font-weight: bold; }
+        .highlight-orange { color: #ff9800; font-weight: bold; }
+
+        .bom-panel {
+            background-color: #2b3a42;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #3d525c;
+        }
+
+        .bom-panel p { margin: 6px 0; font-size: 0.88rem; }
+        .bom-title { color: #81d4fa; margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px;}
+
+        .instructions {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        /* --- CSS FOR 3D ANNOTATIONS --- */
+        .part-label {
+          background: rgba(255,255,255,0.95);
+          color: var(--text);
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          border: 1px solid #eadfd7;
+          white-space: nowrap;
+          pointer-events: none;
+        }
+        .part-label strong { color: #4da6ff; }
+
+        .dim-label {
+          color: #4da6ff;
+          font-size: 11px;
+          font-weight: 700;
+          white-space: nowrap;
+          pointer-events: none;
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #2a3f4c;
+            border-radius: 6px;
+            border: 1px solid #4da6ff;
+        }
+        .toggle-group input { width: auto; cursor: pointer; transform: scale(1.2); }
+
+        /* Ensure toggle labels and sidebar text are dark in the light theme */
+        .panel[data-tab="3D-Drawing"] .toggle-group { background: transparent; border-color: transparent; }
+        .panel[data-tab="3D-Drawing"] #sidebar label,
+        .panel[data-tab="3D-Drawing"] #sidebar .structure-header span,
+        .panel[data-tab="3D-Drawing"] #sidebar .bom-title,
+        .panel[data-tab="3D-Drawing"] #sidebar .instructions { color: var(--text) !important; }
+        
+        /* Override dark cards/controls inside 3D panel to match light theme */
+        .panel[data-tab="3D-Drawing"] #sidebar .structure-card {
+          background: var(--card) !important;
+          border: 1px solid #eadfd7 !important;
+          color: var(--text) !important;
+          box-shadow: none !important;
+        }
+        .panel[data-tab="3D-Drawing"] #sidebar .structure-card .control-group label { color: var(--muted) !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .structure-header { border-bottom: 1px solid #eadfd7 !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .structure-header span { color: var(--head) !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .dashboard { background: var(--card) !important; border: 1px solid #eadfd7 !important; color: var(--text) !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .bom-panel { background: var(--card) !important; border: 1px solid #eadfd7 !important; color: var(--text) !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .cut-box { background: #fff7f1 !important; border-color: #eadfd7 !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .toggle-group { background: transparent !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important; color: #1b120c !important; }
+        .panel[data-tab="3D-Drawing"] #sidebar .btn-danger { background-color: #d32f2f !important; color: white !important; }
+        .panel[data-tab="3D-Drawing"] input[type="range"] { accent-color: #4da6ff; }
+        /* Target the inline-styled waste-margin control and force light theme */
+        .panel[data-tab="3D-Drawing"] #sidebar .control-group[style*="background-color: #24323b"] {
+          background: var(--card) !important;
+          border: 1px solid #eadfd7 !important;
+          color: var(--text) !important;
+          padding: 10px !important;
+        }
+        .panel[data-tab="3D-Drawing"] #sidebar .control-group[style*="background-color: #24323b"] label {
+          color: var(--muted) !important;
+        }
+        .panel[data-tab="3D-Drawing"] #sidebar .control-group[style*="background-color: #24323b"] small {
+          color: var(--muted) !important;
+        }
+
+        .export-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+        .export-btn:hover { background-color: #45a049; }
+
+        .cut-box {
+            background-color: #1a252c;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px dashed #4da6ff;
+        }
+    </style>
+    
+    <!-- Load Three.js, OrbitControls, CSS2DRenderer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+    
+    <!-- Load PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,6 +270,10 @@
         radial-gradient(900px 400px at 90% -20%, #ffe6b5 0%, rgba(255,230,181,0) 55%),
         #f4f1ee;
       margin:0; color:var(--text);
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      min-width: 0;
     }
     .wrap{
       max-width: 1100px; margin: 24px auto; background:var(--card);
@@ -58,7 +305,7 @@
     }
     .panel{ display:none; padding-top:12px; }
     .panel.active{ display:block; }
-    table{ width:100%; border-collapse:collapse; background:var(--bg); border-radius:10px; overflow:hidden; }
+    table{ width:100%; max-width:100%; border-collapse:collapse; background:var(--bg); border-radius:10px; }
     th, td{ border:1px solid var(--grid); padding:8px; vertical-align:middle; }
     th{
       background: linear-gradient(135deg, #8b3f10, #b85616);
@@ -201,6 +448,10 @@
       .wrap{ margin: 12px; padding:12px; }
       .hero{ flex-direction:column; align-items:flex-start; gap:6px; }
       .hero h2{ font-size:22px; }
+      .topbar{ align-items: stretch; }
+      .topbar label, .topbar select, .topbar button { width: 100%; max-width: 100%; }
+      .topbar label{ display:flex; align-items:center; gap:8px; }
+      .topbar select, .topbar button{ flex: 1 1 auto; }
     }
 
     @media (max-width: 900px){
@@ -211,8 +462,8 @@
 
     @media (max-width: 700px){
       body{ font-size:17px; }
-      .wrap{ margin: 8px; padding:10px; border-radius:12px; }
-      table{ display:block; }
+      .wrap{ margin: 8px; padding:10px; border-radius:12px; overflow-x: hidden; }
+      table{ display:block; overflow-x:auto; min-width:0; }
       thead{ display:none; }
       tbody, tr, td, th{ display:block; width:100%; }
       tr{ margin-bottom:10px; background:#fff7f1; border:1px solid #eadfd7; border-radius:12px; overflow:hidden; }
@@ -220,6 +471,8 @@
       td:first-child{ font-weight:600; color:var(--ink); background:#fff1e7; padding:10px; }
       td:last-child{ border-bottom:none; }
       td input, td select, td textarea{ font-size:17px; padding:14px 12px; width:100%; }
+      th, td{ word-break: break-word; }
+      #loadTable td:before, #loadTable th:before{ min-width:100px; }
       .tabs{ gap:6px; flex-wrap:wrap; justify-content:flex-start; }
       .tab{ font-size:13px; padding:10px 12px; flex: 0 1 auto; }
       .actions{ flex-direction:column; gap:8px; }
@@ -247,7 +500,7 @@
       #loadTable thead{ display:none; }
       #loadTable tr{ display:flex; flex-direction:column; }
       #loadTable td{ display:flex; align-items:center; padding:8px; }
-      #loadTable td:before{ content:attr(data-label); font-weight:600; min-width:140px; color:var(--ink); }
+      #loadTable td:before{ content:attr(data-label); font-weight:600; min-width:100px; color:var(--ink); }
       #loadTable th:before{ content:attr(data-label); font-weight:600; color:var(--ink); }
       .appliance-chips{ gap:4px; }
       .appliance-chip{ font-size:12px; padding:4px 8px; }
@@ -324,6 +577,26 @@
     .costing-tab-content.active { display: block; }
     .data-status { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; opacity: 0; transition: opacity 0.3s; z-index: 1000; }
     .data-status.show { opacity: 1; }
+  </style>
+  <style>
+    /* Ensure 3D drawing panel layout shows sidebar and canvas side-by-side when active */
+    .panel[data-tab="3D-Drawing"].active {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .panel[data-tab="3D-Drawing"].active #sidebar {
+      flex: 0 0 410px;
+      max-height: calc(80vh);
+      overflow: auto;
+    }
+    .panel[data-tab="3D-Drawing"].active #canvas-container {
+      flex: 1 1 auto;
+      min-height: 560px;
+      height: calc(80vh);
+      position: relative;
+      background: transparent;
+    }
   </style>
 </head>
 <body>
@@ -543,6 +816,801 @@
         </table>
       </div>
 
+      <div class="panel" data-tab="3D-Drawing">
+        <div id="sidebar">
+        <h2 style="font-size: 1.5rem;">Pravan Group</h2>
+        <p style="font-size: 0.85rem; color: #aaa; margin:0 0 10px 0;">Delivering Power, Building Trust</p>
+        
+        <div class="toggle-group">
+            <input type="checkbox" id="uiAnnotations" checked>
+            <label for="uiAnnotations" style="color: #fff; font-weight: bold; cursor: pointer;">Show Annotations & Dimensions</label>
+        </div>
+
+        <button id="btnAddStructure" class="btn-primary">➕ Add New Structure Set</button>
+
+        <!-- Container where multiple structures will be controlled -->
+        <div id="structures-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
+
+        <div class="dashboard">
+            <p>Total Combined Panels: <span id="outTotalPanels" class="highlight-orange">0</span></p>
+        </div>
+
+        <!-- NEW WASTE MARGIN SLIDER -->
+        <div class="control-group" style="margin-top: 5px; padding: 10px; background-color: #24323b; border-radius: 6px; border: 1px solid #3d525c;">
+            <label style="color: #81d4fa; font-weight: bold;">Material Waste Margin (%) <span id="valWasteMargin">0</span></label>
+            <input type="range" id="uiWasteMargin" min="0" max="20" step="1" value="0">
+            <small style="color: #aaa; font-size: 0.75rem;">Adds extra length to the steel BOM for saw cuts & scrap</small>
+        </div>
+
+        <div class="bom-panel">
+            <div class="bom-title">Combined Bill of Materials</div>
+            <p><strong>80x40x2mm Channel (21ft):</strong> <span id="bom80" style="float:right;">0 pcs</span></p>
+            <p><strong>41x41x2mm Channel (21ft):</strong> <span id="bom41" style="float:right;">0 pcs</span></p>
+            <p><strong>Base Plates:</strong> <span id="bomPlates" style="float:right;">0 pcs</span></p>
+            <p><strong>Fasteners (Anchors for Bases):</strong> <span id="bomFastners" style="float:right;">0 pcs</span></p>
+            <p><strong>Structure Nuts & Bolts:</strong> <span id="bomBolts" style="float:right;">0 pcs</span></p>
+            <p><strong>End Clamps:</strong> <span id="bomEndClamps" style="float:right;">0 pcs</span></p>
+            <p><strong>Mid Clamps:</strong> <span id="bomMidClamps" style="float:right;">0 pcs</span></p>
+        </div>
+
+        <button id="btnExportPDF" class="export-btn">📄 Export to PDF Report</button>
+
+        <div class="instructions">
+            Left Click: Rotate | Right Click: Pan | Scroll: Zoom
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        // --- Multi-Structure State Management ---
+        let structuresData = [
+            {
+                id: 1,
+                frontHeight: 2.0,
+                backHeight: 5.0,
+                legDist: 8.0,
+                width: 18.0,
+                rows: 2,
+                rowCols: [5, 5],
+                rowGap: 0.0,
+                panelOffset: 0.0,
+                supportGap: 4.0,
+                posX: 0.0, 
+                posZ: 0.0
+            }
+        ];
+        let nextId = 2;
+
+        // --- 1. Scene, Camera, WebGLRenderer ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf4f1ee);
+
+        const gridHelper = new THREE.GridHelper(150, 150, 0xeadfd7, 0xe4d7ce);
+        scene.add(gridHelper);
+
+        const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(35, 25, 45);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        // Make canvas fill the container and receive pointer events
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.top = '0';
+        renderer.domElement.style.left = '0';
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+        renderer.domElement.style.display = 'block';
+        renderer.domElement.style.zIndex = '1';
+        container.appendChild(renderer.domElement);
+
+        const labelRenderer = new THREE.CSS2DRenderer();
+        labelRenderer.setSize(container.clientWidth, container.clientHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none'; 
+        labelRenderer.domElement.style.left = '0';
+        labelRenderer.domElement.style.width = '100%';
+        labelRenderer.domElement.style.height = '100%';
+        labelRenderer.domElement.style.zIndex = '10';
+        container.appendChild(labelRenderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 5, 0);
+        controls.update();
+
+        // --- 2. Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        dirLight.position.set(50, 80, 40);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // --- 3. Materials & Edge Helper ---
+        const mat80 = new THREE.MeshStandardMaterial({ color: 0x3a4042, roughness: 0.6, metalness: 0.4 }); 
+        const mat41 = new THREE.MeshStandardMaterial({ color: 0x1f2122, roughness: 0.6, metalness: 0.4 }); 
+        const matConcrete = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, roughness: 0.9, metalness: 0.1 }); 
+        
+        const matPanel = new THREE.MeshStandardMaterial({ 
+            color: 0x051320, 
+            roughness: 0.1, 
+            metalness: 0.3,
+            transparent: true,
+            opacity: 0.65 
+        }); 
+
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+
+        function addWhiteEdges(mesh) {
+            const edges = new THREE.EdgesGeometry(mesh.geometry);
+            const line = new THREE.LineSegments(edges, edgeMaterial);
+            mesh.add(line);
+        }
+
+        let masterStructureGroup = new THREE.Group();
+        scene.add(masterStructureGroup);
+
+        const chan80w = 80 / 304.8;  
+        const chan80t = 40 / 304.8;  
+        const thick41 = 41 / 304.8;  
+        const panelThick = 0.15;     
+        const footingSize = 1.25;    
+
+        // --- Annotation Helpers ---
+        function clearDOMAnnotations(group) {
+            group.traverse((child) => {
+                if (child.isCSS2DObject && child.element.parentNode) {
+                    child.element.parentNode.removeChild(child.element);
+                }
+            });
+        }
+
+        function createPartLabel(htmlHTML, position, parent) {
+            const div = document.createElement('div');
+            div.className = 'part-label';
+            div.innerHTML = htmlHTML;
+            const label = new THREE.CSS2DObject(div);
+            label.position.copy(position);
+            parent.add(label);
+        }
+
+        function createDimensionLine(p1, p2, text, parent, offsetVector = new THREE.Vector3(0, 0, 0)) {
+            const material = new THREE.LineBasicMaterial({ color: 0x00ffcc, depthTest: false });
+            
+            const p1Off = p1.clone().add(offsetVector);
+            const p2Off = p2.clone().add(offsetVector);
+            
+            const dir = new THREE.Vector3().subVectors(p2Off, p1Off).normalize();
+            let up = new THREE.Vector3(0, 1, 0);
+            if (Math.abs(dir.y) > 0.9) up = new THREE.Vector3(1, 0, 0); 
+            
+            const cross = new THREE.Vector3().crossVectors(dir, up).normalize().multiplyScalar(0.25);
+            
+            const points = [
+                p1Off.clone().add(cross), p1Off.clone().sub(cross), p1Off, 
+                p2Off, p2Off.clone().add(cross), p2Off.clone().sub(cross)  
+            ];
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, material);
+            line.renderOrder = 999;
+            parent.add(line);
+
+            const midPoint = new THREE.Vector3().addVectors(p1Off, p2Off).multiplyScalar(0.5);
+            const div = document.createElement('div');
+            div.className = 'dim-label';
+            div.textContent = text;
+            const label = new THREE.CSS2DObject(div);
+            label.position.copy(midPoint);
+            parent.add(label);
+        }
+
+        // --- UI Builder for Multiple Structures ---
+        const structuresContainer = document.getElementById('structures-container');
+
+        function renderSidebarUI() {
+            structuresContainer.innerHTML = '';
+
+            structuresData.forEach((st, index) => {
+                const card = document.createElement('div');
+                card.className = 'structure-card';
+
+                let rowSlidersHTML = '';
+                for(let r=0; r<st.rows; r++) {
+                    if(st.rowCols.length <= r) st.rowCols[r] = 5;
+                    rowSlidersHTML += `
+                        <div class="control-group">
+                            <label>Row ${r+1} Panels <span id="val_s${st.id}_r${r}">${st.rowCols[r]}</span></label>
+                            <input type="range" min="0" max="20" step="1" value="${st.rowCols[r]}" data-id="${st.id}" data-row="${r}" class="row-slider">
+                        </div>
+                    `;
+                }
+
+                // Make absolutely sure IDs follow the val_s{id}_{param} convention perfectly
+                card.innerHTML = `
+                    <div class="structure-header">
+                        <span>Structure Set #${index + 1} (ID: ${st.id})</span>
+                        ${structuresData.length > 1 ? `<button class="btn-danger" data-id="${st.id}">Remove</button>` : ''}
+                    </div>
+                    <div class="control-group">
+                        <label>Front Height (ft) <span id="val_s${st.id}_frontHeight">${st.frontHeight.toFixed(1)}</span></label>
+                        <input type="range" min="1.0" max="15.0" step="0.1" value="${st.frontHeight}" data-id="${st.id}" data-param="frontHeight" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Back Height (ft) <span id="val_s${st.id}_backHeight">${st.backHeight.toFixed(1)}</span></label>
+                        <input type="range" min="2.0" max="25.0" step="0.1" value="${st.backHeight}" data-id="${st.id}" data-param="backHeight" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Leg Distance (ft) <span id="val_s${st.id}_legDist">${st.legDist.toFixed(1)}</span></label>
+                        <input type="range" min="2.0" max="30.0" step="0.1" value="${st.legDist}" data-id="${st.id}" data-param="legDist" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Structure Width (ft) <span id="val_s${st.id}_width">${st.width.toFixed(1)}</span></label>
+                        <input type="range" min="2.0" max="80.0" step="0.1" value="${st.width}" data-id="${st.id}" data-param="width" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Panel Rows <span id="val_s${st.id}_rows">${st.rows}</span></label>
+                        <input type="range" min="1" max="5" step="1" value="${st.rows}" data-id="${st.id}" data-param="rows" class="param-slider">
+                    </div>
+                    ${rowSlidersHTML}
+                    <div class="control-group">
+                        <label>Row Gap (ft) <span id="val_s${st.id}_rowGap">${st.rowGap.toFixed(1)}</span></label>
+                        <input type="range" min="0.0" max="10.0" step="0.1" value="${st.rowGap}" data-id="${st.id}" data-param="rowGap" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Panel Position Shift (ft) <span id="val_s${st.id}_panelOffset">${st.panelOffset.toFixed(1)}</span></label>
+                        <input type="range" min="-30.0" max="30.0" step="0.1" value="${st.panelOffset}" data-id="${st.id}" data-param="panelOffset" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>Support Gap (ft) <span id="val_s${st.id}_supportGap">${st.supportGap.toFixed(1)}</span></label>
+                        <input type="range" min="1.0" max="5.0" step="0.1" value="${st.supportGap}" data-id="${st.id}" data-param="supportGap" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>World X Spacing (ft) <span id="val_s${st.id}_posX">${st.posX.toFixed(1)}</span></label>
+                        <input type="range" min="-60.0" max="60.0" step="1.0" value="${st.posX}" data-id="${st.id}" data-param="posX" class="param-slider">
+                    </div>
+                    <div class="control-group">
+                        <label>World Z Spacing (ft) <span id="val_s${st.id}_posZ">${st.posZ.toFixed(1)}</span></label>
+                        <input type="range" min="-60.0" max="60.0" step="1.0" value="${st.posZ}" data-id="${st.id}" data-param="posZ" class="param-slider">
+                    </div>
+                    
+                    <div class="cut-box">
+                        <div style="color: #4da6ff; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">⚙️ Cutting Specifications:</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #ddd;">
+                            <span>Angle: <strong id="cut_angle_${st.id}" style="color: #4CAF50;">-</strong></span>
+                            <span>Rafter: <strong id="cut_rafter_${st.id}" style="color: #ff9800;">-</strong></span>
+                            <span>Purlin: <strong id="cut_purlin_${st.id}" style="color: #ff9800;">-</strong></span>
+                        </div>
+                    </div>
+                `;
+
+                structuresContainer.appendChild(card);
+            });
+
+            // Bind events
+            document.querySelectorAll('.param-slider').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    const param = e.target.getAttribute('data-param');
+                    const val = parseFloat(e.target.value);
+                    
+                    const st = structuresData.find(s => s.id === id);
+                    if (st) {
+                        st[param] = val;
+                        
+                        // If Rows change, restructure the row sliders
+                        if (param === 'rows') {
+                            while(st.rowCols.length < val) st.rowCols.push(5);
+                            while(st.rowCols.length > val) st.rowCols.pop();
+                            renderSidebarUI(); 
+                        }
+                        
+                        rebuildScene(); // This will recalculate clamping and update the labels
+                    }
+                });
+            });
+
+            document.querySelectorAll('.row-slider').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    const rowIdx = parseInt(e.target.getAttribute('data-row'));
+                    const val = parseInt(e.target.value);
+
+                    const st = structuresData.find(s => s.id === id);
+                    if (st) {
+                        st.rowCols[rowIdx] = val;
+                        // Update individual row text instantly
+                        const span = document.getElementById(`val_s${st.id}_r${rowIdx}`);
+                        if (span) span.innerText = val;
+                        rebuildScene();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-danger').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    structuresData = structuresData.filter(s => s.id !== id);
+                    renderSidebarUI();
+                    rebuildScene();
+                });
+            });
+        }
+
+        document.getElementById('btnAddStructure').addEventListener('click', () => {
+            const lastSt = structuresData[structuresData.length - 1];
+            const newX = lastSt ? lastSt.posX + 25.0 : 0.0;
+            
+            structuresData.push({
+                id: nextId++,
+                frontHeight: 2.0,
+                backHeight: 5.0,
+                legDist: 8.0,
+                width: 18.0,
+                rows: 2,
+                rowCols: [5, 5],
+                rowGap: 0.0,
+                panelOffset: 0.0,
+                supportGap: 4.0,
+                posX: newX,
+                posZ: 0.0
+            });
+            renderSidebarUI();
+            rebuildScene();
+        });
+
+        // Event Listener for the Waste Margin Slider
+        document.getElementById('uiWasteMargin').addEventListener('input', (e) => {
+            document.getElementById('valWasteMargin').innerText = e.target.value;
+            rebuildScene();
+        });
+
+        // --- Core Math & 3D Engine for Single Structure ---
+        function buildSingleStructureMesh(st, showAnno) {
+            const stGroup = new THREE.Group();
+            stGroup.position.set(st.posX, 0, st.posZ);
+
+            let hFront = st.frontHeight;
+            let hBack = st.backHeight;
+            let legDist = st.legDist;
+            let width = st.width;
+            const rows = st.rows;
+            const rowGap = st.rowGap;
+            const panelOffset = st.panelOffset;
+            let supportGap = st.supportGap;
+
+            const roofLength = (rows * 7.0) + (rows > 1 ? (rows - 1) * rowGap : 0);
+            const rafterLength = Math.max(1.0, roofLength - 2.0); 
+
+            // Clamp Heights
+            let heightDiff = hBack - hFront;
+            if (heightDiff <= 0) {
+                hBack = hFront + 0.1;
+                heightDiff = 0.1;
+            } else if (heightDiff >= rafterLength) {
+                hBack = hFront + rafterLength - 0.1;
+                heightDiff = hBack - hFront;
+            }
+
+            // Clamp Leg Distance
+            const maxAllowedLegDist = Math.sqrt(Math.pow(rafterLength, 2) - Math.pow(heightDiff, 2));
+            if (legDist > maxAllowedLegDist) legDist = maxAllowedLegDist;
+
+            const angleRad = Math.atan2(heightDiff, legDist);
+            const angleDeg = (angleRad * (180 / Math.PI)).toFixed(1);
+
+            let maxCols = 0;
+            for (let r = 0; r < rows; r++) if (st.rowCols[r] > maxCols) maxCols = st.rowCols[r];
+            const commonPurlinLength = maxCols > 0 ? (maxCols * 4.0) + 1.0 : 0;
+            
+            // Clamp Structure Width
+            let maxAllowedWidth = 80.0;
+            if (commonPurlinLength > 0) {
+                maxAllowedWidth = Math.max(2.0, commonPurlinLength - (2 * Math.abs(panelOffset)));
+                if (width > maxAllowedWidth) width = maxAllowedWidth;
+            }
+            
+            // Clamp Support Gap
+            const maxAllowedSupportGap = 5.0;
+            if (supportGap > maxAllowedSupportGap) supportGap = maxAllowedSupportGap;
+
+            // --- SYNCHRONIZE DOM LABELS & SLIDERS FOR THIS STRUCTURE ---
+            const updateUI = (param, value, maxVal = null) => {
+                const input = document.querySelector(`input[data-id='${st.id}'][data-param='${param}']`);
+                const span = document.getElementById(`val_s${st.id}_${param}`);
+                if (input) {
+                    if (maxVal !== null) input.max = maxVal.toFixed(1);
+                    input.value = value;
+                }
+                if (span) {
+                    span.innerText = Number.isInteger(value) ? value : value.toFixed(1);
+                }
+                st[param] = value; 
+            };
+
+            updateUI('frontHeight', hFront);
+            updateUI('backHeight', hBack);
+            updateUI('legDist', legDist, maxAllowedLegDist);
+            updateUI('width', width, maxAllowedWidth);
+            updateUI('supportGap', supportGap, maxAllowedSupportGap);
+            updateUI('rowGap', rowGap);
+            updateUI('panelOffset', panelOffset);
+            updateUI('posX', st.posX);
+            updateUI('posZ', st.posZ);
+
+            let numSpans = Math.ceil(width / 12);
+            if (numSpans < 1) numSpans = 1; 
+            const numFrames = numSpans + 1;
+            const spanWidth = width / numSpans;
+
+            let length80 = 0, length41 = 0, totalPanelsCount = 0;
+
+            const baseZStart = legDist / 2;
+            const baseZEnd = -legDist / 2;
+            const footingGeo = new THREE.BoxGeometry(footingSize, footingSize, footingSize);
+            const commonPurlinGeo = commonPurlinLength > 0 ? new THREE.BoxGeometry(commonPurlinLength, thick41, thick41) : null;
+
+            // --- BUILD MAIN FRAME ---
+            for (let i = 0; i < numFrames; i++) {
+                const posX = -(width / 2) + (i * spanWidth);
+
+                const fFooting = new THREE.Mesh(footingGeo, matConcrete);
+                fFooting.position.set(posX, footingSize / 2, baseZStart);
+                addWhiteEdges(fFooting);
+                stGroup.add(fFooting);
+
+                const bFooting = new THREE.Mesh(footingGeo, matConcrete);
+                bFooting.position.set(posX, footingSize / 2, baseZEnd);
+                addWhiteEdges(bFooting);
+                stGroup.add(bFooting);
+
+                const fLegGeo = new THREE.BoxGeometry(chan80w, hFront, chan80t);
+                const fLegMesh = new THREE.Mesh(fLegGeo, mat80);
+                fLegMesh.position.set(posX, hFront / 2, baseZStart);
+                addWhiteEdges(fLegMesh);
+                stGroup.add(fLegMesh);
+                length80 += hFront;
+
+                const bLegGeo = new THREE.BoxGeometry(chan80w, hBack, chan80t);
+                const bLegMesh = new THREE.Mesh(bLegGeo, mat80);
+                bLegMesh.position.set(posX, hBack / 2, baseZEnd);
+                addWhiteEdges(bLegMesh);
+                stGroup.add(bLegMesh);
+                length80 += hBack;
+
+                if (showAnno && i === 0) {
+                    createPartLabel(`Set #${st.id} Plinth`, new THREE.Vector3(posX - 1.5, footingSize, baseZStart), stGroup);
+                    createPartLabel("Front Leg (80x40)", new THREE.Vector3(posX - 1.5, hFront / 2, baseZStart), stGroup);
+                    createPartLabel("Back Leg (80x40)", new THREE.Vector3(posX - 1.5, hBack / 2, baseZEnd), stGroup);
+                    
+                    createPartLabel(`Tilt: <strong>${angleDeg}°</strong>`, new THREE.Vector3(posX, hFront + 0.5, baseZStart), stGroup);
+
+                    createDimensionLine(
+                        new THREE.Vector3(posX, hFront/2, baseZStart),
+                        new THREE.Vector3(posX, hFront/2, baseZEnd),
+                        `Leg Dist: ${legDist.toFixed(1)}ft`,
+                        stGroup,
+                        new THREE.Vector3(-1.0, 0, 0)
+                    );
+                }
+            }
+
+            if (showAnno && numFrames > 1) {
+                createDimensionLine(
+                    new THREE.Vector3(-(width / 2), 0.5, baseZStart),
+                    new THREE.Vector3((width / 2), 0.5, baseZStart),
+                    `Width: ${width.toFixed(1)}ft`,
+                    stGroup,
+                    new THREE.Vector3(0, 0, 2.0)
+                );
+            }
+
+            // --- BUILD ROOF ASSEMBLY ---
+            const roofGroup = new THREE.Group();
+            const midpointY = (hFront + hBack) / 2;
+            roofGroup.position.set(0, midpointY + (chan80t/2), 0); 
+            roofGroup.rotation.x = angleRad; 
+            stGroup.add(roofGroup);
+
+            const rafterGeo = new THREE.BoxGeometry(chan80t, chan80w, rafterLength);
+            for (let i = 0; i < numFrames; i++) {
+                const posX = -(width / 2) + (i * spanWidth);
+                const rafterMesh = new THREE.Mesh(rafterGeo, mat80);
+                rafterMesh.position.set(posX, 0, 0); 
+                addWhiteEdges(rafterMesh);
+                roofGroup.add(rafterMesh);
+                length80 += rafterLength;
+
+                if (showAnno && i === 0) {
+                    createPartLabel(`Rafter | Cut: <strong>${rafterLength.toFixed(2)}ft</strong>`, new THREE.Vector3(posX - 1.5, 0, 0), roofGroup);
+                }
+            }
+
+            const purlinY = (chan80w / 2) + (thick41 / 2);
+            const panelGeo = new THREE.BoxGeometry(3.9, panelThick, 6.9); 
+            const panelY = purlinY + (thick41 / 2) + (panelThick / 2);
+            const halfGap = supportGap / 2.0;
+            let annotatedPurlin = false;
+            let lastRowZCenter = null;
+
+            let totalEndClamps = 0;
+            let totalMidClamps = 0;
+
+            for (let r = 0; r < rows; r++) {
+                const cols = st.rowCols[r] || 0;
+                if (cols === 0) continue;
+
+                totalPanelsCount += cols;
+                totalEndClamps += 4;
+                if (cols > 1) totalMidClamps += 2 * (cols - 1);
+
+                const rowZCenter = (roofLength / 2) - 3.5 - (r * (7.0 + rowGap));
+                
+                if (showAnno && lastRowZCenter !== null && rowGap > 0) {
+                    createDimensionLine(
+                        new THREE.Vector3(panelOffset, panelY, lastRowZCenter - 3.5), 
+                        new THREE.Vector3(panelOffset, panelY, rowZCenter + 3.5), 
+                        `Gap: ${rowGap.toFixed(1)}ft`,
+                        roofGroup,
+                        new THREE.Vector3(0, 1.5, 0)
+                    );
+                }
+                lastRowZCenter = rowZCenter;
+
+                if (commonPurlinGeo) {
+                    const support1Z = rowZCenter + halfGap; 
+                    const purlin1 = new THREE.Mesh(commonPurlinGeo, mat41);
+                    purlin1.position.set(panelOffset, purlinY, support1Z); 
+                    addWhiteEdges(purlin1);
+                    roofGroup.add(purlin1);
+                    length41 += commonPurlinLength;
+
+                    const support2Z = rowZCenter - halfGap;
+                    const purlin2 = new THREE.Mesh(commonPurlinGeo, mat41);
+                    purlin2.position.set(panelOffset, purlinY, support2Z); 
+                    addWhiteEdges(purlin2);
+                    roofGroup.add(purlin2);
+                    length41 += commonPurlinLength;
+
+                    if (showAnno && !annotatedPurlin) {
+                        createPartLabel(`Purlin | Cut: <strong>${commonPurlinLength.toFixed(2)}ft</strong>`, new THREE.Vector3(panelOffset + commonPurlinLength/2 + 1, purlinY, support1Z), roofGroup);
+                        annotatedPurlin = true;
+                    }
+                }
+
+                const totalPanelsWidth = cols * 4.0;
+                const startX = -(totalPanelsWidth / 2) + 2 + panelOffset; 
+                for (let c = 0; c < cols; c++) {
+                    const posX = startX + (c * 4);
+                    const panelMesh = new THREE.Mesh(panelGeo, matPanel);
+                    panelMesh.position.set(posX, panelY, rowZCenter);
+                    addWhiteEdges(panelMesh);
+                    roofGroup.add(panelMesh);
+                    
+                    if (showAnno && r === 0 && c === 0) {
+                        createPartLabel(`Solar Panel Set #${st.id}`, new THREE.Vector3(posX, panelY + 1.0, rowZCenter), roofGroup);
+                    }
+                }
+            }
+
+            const totalBases = numFrames * 2;
+            const totalBasePlates = totalBases; 
+            const totalFastners = totalBases * 4; 
+            const activeRowsCount = st.rowCols.filter(c => c > 0).length;
+            const totalBoltsJoints = (numFrames * 2) + (numFrames * activeRowsCount * 2);
+
+            return {
+                group: stGroup,
+                metrics: {
+                    panels: totalPanelsCount,
+                    length80,
+                    length41,
+                    basePlates: totalBasePlates,
+                    fasteners: totalFastners,
+                    bolts: totalBoltsJoints,
+                    endClamps: totalEndClamps,
+                    midClamps: totalMidClamps,
+                    angleDeg,
+                    rafterLength,
+                    commonPurlinLength
+                }
+            };
+        }
+
+        // --- Rebuild Whole Scene ---
+        function rebuildScene() {
+            clearDOMAnnotations(masterStructureGroup);
+            scene.remove(masterStructureGroup);
+            masterStructureGroup = new THREE.Group();
+
+            const showAnno = document.getElementById('uiAnnotations').checked;
+            const wasteMarginPerc = parseFloat(document.getElementById('uiWasteMargin').value) / 100.0;
+            const wasteFactor = 1.0 + wasteMarginPerc;
+
+            let combinedPanels = 0;
+            let sumLen80 = 0;
+            let sumLen41 = 0;
+            let sumPlates = 0;
+            let sumFasteners = 0;
+            let sumBolts = 0;
+            let sumEndClamps = 0;
+            let sumMidClamps = 0;
+
+            structuresData.forEach(st => {
+                const res = buildSingleStructureMesh(st, showAnno);
+                masterStructureGroup.add(res.group);
+
+                // Update UI Cut list card for this specific structure
+                const elAngle = document.getElementById(`cut_angle_${st.id}`);
+                const elRafter = document.getElementById(`cut_rafter_${st.id}`);
+                const elPurlin = document.getElementById(`cut_purlin_${st.id}`);
+                
+                if(elAngle) elAngle.innerText = res.metrics.angleDeg + "°";
+                if(elRafter) elRafter.innerText = res.metrics.rafterLength.toFixed(2) + " ft";
+                if(elPurlin) elPurlin.innerText = res.metrics.commonPurlinLength.toFixed(2) + " ft";
+
+                combinedPanels += res.metrics.panels;
+                sumLen80 += res.metrics.length80;
+                sumLen41 += res.metrics.length41;
+                sumPlates += res.metrics.basePlates;
+                sumFasteners += res.metrics.fasteners;
+                sumBolts += res.metrics.bolts;
+                sumEndClamps += res.metrics.endClamps;
+                sumMidClamps += res.metrics.midClamps;
+            });
+
+            scene.add(masterStructureGroup);
+
+            // Update Master BOM Dashboard (Applying User-Selected Waste Margin to Steel)
+            document.getElementById('outTotalPanels').innerText = combinedPanels;
+            document.getElementById('bom80').innerText = Math.ceil((sumLen80 * wasteFactor) / 21) + " pcs";
+            document.getElementById('bom41').innerText = Math.ceil((sumLen41 * wasteFactor) / 21) + " pcs";
+            
+            // Accessories are exact counts
+            document.getElementById('bomPlates').innerText = sumPlates + " pcs";
+            document.getElementById('bomFastners').innerText = sumFasteners + " pcs";
+            document.getElementById('bomBolts').innerText = sumBolts + " sets";
+            document.getElementById('bomEndClamps').innerText = sumEndClamps + " pcs";
+            document.getElementById('bomMidClamps').innerText = sumMidClamps + " pcs";
+        }
+
+        // --- PDF EXPORT FUNCTION ---
+        document.getElementById('btnExportPDF').addEventListener('click', async () => {
+            const btn = document.getElementById('btnExportPDF');
+            btn.innerText = "Generating PDF...";
+            btn.style.backgroundColor = "#ff9800";
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4'); 
+
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(26);
+                pdf.setTextColor(0, 102, 204);
+                pdf.text("Pravan Group", 105, 18, { align: 'center' });
+                
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(10.5);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text("Delivering Power, Building Trust", 105, 25, { align: 'center' });
+
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(14);
+                pdf.setTextColor(40, 40, 40);
+                pdf.text("Multi-Structure Solar Design Report", 105, 33, { align: 'center' });
+                
+                pdf.setDrawColor(200, 200, 200);
+                pdf.line(15, 37, 195, 37);
+
+                renderer.render(scene, camera);
+                labelRenderer.render(scene, camera);
+
+                const canvasElement = document.getElementById('canvas-container');
+                const canvas = await html2canvas(canvasElement, { backgroundColor: "#1a1a1a" });
+                const imgData = canvas.toDataURL('image/png');
+                
+                const pdfWidth = 180; 
+                const marginX = 15;
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                pdf.addImage(imgData, 'PNG', marginX, 42, pdfWidth, pdfHeight);
+
+                let startY = 42 + pdfHeight + 10;
+                
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(12);
+                pdf.setTextColor(0, 102, 204);
+                pdf.text(`Structure Specifications (${structuresData.length} Sets)`, 15, startY);
+                pdf.text("Combined Bill of Materials", 110, startY);
+
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(9);
+                pdf.setTextColor(50, 50, 50);
+                
+                let y = startY + 6;
+                structuresData.forEach((st) => {
+                    const angle = document.getElementById(`cut_angle_${st.id}`).innerText;
+                    const raft = document.getElementById(`cut_rafter_${st.id}`).innerText;
+                    const purl = document.getElementById(`cut_purlin_${st.id}`).innerText;
+
+                    pdf.setFont("helvetica", "bold");
+                    pdf.text(`Set #${st.id}: Width ${st.width}ft, Rows ${st.rows}, Panels ${st.rowCols.reduce((a,b)=>a+b,0)}`, 15, y);
+                    y += 4.5;
+                    
+                    pdf.setFont("helvetica", "normal");
+                    pdf.setTextColor(0, 120, 0); 
+                    pdf.text(`   Cut Sizes -> Angle: ${angle} | Rafter: ${raft} | Purlin: ${purl}`, 15, y);
+                    pdf.setTextColor(50, 50, 50);
+                    y += 6.5;
+                });
+
+                let ry = startY + 6;
+                const wasteMarginVal = document.getElementById('uiWasteMargin').value;
+                const results = [
+                    `Total Combined Panels: ${document.getElementById('outTotalPanels').innerText}`,
+                    ``,
+                    `BILL OF MATERIALS (Includes ${wasteMarginVal}% Waste):`,
+                    `• 80x40x2mm Channel (21ft): ${document.getElementById('bom80').innerText}`,
+                    `• 41x41x2mm Channel (21ft): ${document.getElementById('bom41').innerText}`,
+                    `• Base Plates: ${document.getElementById('bomPlates').innerText}`,
+                    `• Fasteners (Anchors): ${document.getElementById('bomFastners').innerText}`,
+                    `• Structure Nuts & Bolts: ${document.getElementById('bomBolts').innerText}`,
+                    `• End Clamps: ${document.getElementById('bomEndClamps').innerText}`,
+                    `• Mid Clamps: ${document.getElementById('bomMidClamps').innerText}`
+                ];
+
+                results.forEach(line => {
+                    if(line.startsWith("BILL")) pdf.setFont("helvetica", "bold");
+                    else pdf.setFont("helvetica", "normal");
+                    pdf.text(line, 110, ry);
+                    ry += 4.5;
+                });
+
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(150, 150, 150);
+                const date = new Date().toLocaleString();
+                pdf.text(`Pravan Group - Generated on: ${date}`, 15, 290);
+
+                pdf.save("PravanGroup_MultiSolar_Report.pdf");
+
+            } catch(error) {
+                console.error("Error generating PDF:", error);
+                alert("There was an error generating the PDF.");
+            } finally {
+                btn.innerText = "📄 Export to PDF Report";
+                btn.style.backgroundColor = "#4CAF50";
+            }
+        });
+
+        // --- 6. Event Listeners ---
+        document.getElementById('uiAnnotations').addEventListener('change', rebuildScene);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            labelRenderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        // --- Initialize ---
+        renderSidebarUI();
+        rebuildScene();
+
+        // --- 7. Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+        animate();
+    </script>
+      </div>
+
       <!-- Cable Details -->
       <div class="panel" data-tab="Cable Details">
         <table>
@@ -709,7 +1777,7 @@
     </div>
   </div>
 
-  <div id="dataStatus" class="data-status">Data Saved ✓</div>
+  <div id="dataStatus" class="data-status">Data Saved ?</div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -722,7 +1790,7 @@
           // Clear full form (if you have function)
           if (typeof clearForm === "function") clearForm();
 
-          // ✅ Clear images
+          // ? Clear images
           clearAllImages();
 
           // Disable existing list
@@ -757,7 +1825,7 @@
 
         const reader = new FileReader();
         reader.onload = function (e) {
-          imageStore[key] = e.target.result; // ✅ STORE BASE64
+          imageStore[key] = e.target.result; // ? STORE BASE64
 
           // Optional preview
           let preview = document.getElementById(inputId + "_preview");
@@ -782,7 +1850,7 @@
     handleImageInput("cust_loan_proof_photo", "loanProofPhoto");
     handleImageInput("site_location_photo", "siteLocationPhoto");
 
-    const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","Structure Details","BOQ","Costing"];
+    const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","3D-Drawing","Structure Details","BOQ","Costing"];
     const tabs = document.getElementById('tabs');
     tabNames.forEach((name,i) => {
       const t = document.createElement('div');
@@ -792,9 +1860,34 @@
       tabs.appendChild(t);
     });
 
+    function updateRendererSize() {
+      if (!container) return;
+      const w = Math.max(100, container.clientWidth);
+      const h = Math.max(100, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      renderer.setSize(w, h, false);
+      labelRenderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      // render once to avoid initial blank when tab shown
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+
     function activate(name){
       document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.textContent===name));
       document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.tab===name));
+      if (name === '3D-Drawing') {
+        // ensure renderer/camera sizes match the container when the 3D panel becomes visible
+        const canvasContainer = document.getElementById('canvas-container');
+        if (canvasContainer) {
+          canvasContainer.style.display = 'block';
+          canvasContainer.style.minHeight = '560px';
+          canvasContainer.style.height = 'calc(80vh)';
+        }
+        setTimeout(updateRendererSize, 50);
+        setTimeout(updateRendererSize, 300);
+      }
     }
 
 
@@ -1077,6 +2170,12 @@
           rows: struct_rows.value,
           panelsRow: struct_panels_row.value
         },
+        // 3D drawing data (structures and UI controls)
+        drawing3D: {
+          structures: JSON.parse(JSON.stringify(structuresData || [])),
+          wasteMargin: (document.getElementById('uiWasteMargin') || {}).value || '0',
+          showAnnotations: !!(document.getElementById('uiAnnotations') && document.getElementById('uiAnnotations').checked)
+        },
         boq: {
           panels: { spec: boq_panels_spec.value, qty: boq_panels_qty.value, unit: boq_panels_unit.value, remark: boq_panels_remark.value },
           inverter: { spec: boq_inverter_spec.value, qty: boq_inverter_qty.value, unit: boq_inverter_unit.value, remark: boq_inverter_remark.value },
@@ -1100,17 +2199,18 @@
       const lc = data.loadCalc || {};
       const t = data.technical || {};
       const st = data.structure || {};
+      const d3 = data.drawing3D || {};
       const cb = data.cable || {};
       const b = data.boq || {};
       
-      // ✅ Restore images into memory
+      // ? Restore images into memory
       imageStore.aadharPhoto = c.aadharPhoto || "";
       imageStore.electricityPhoto = c.electricityPhoto || "";
       imageStore.passbookPhoto = c.passbookPhoto || "";
       imageStore.loanProofPhoto = c.loanProofPhoto || "";
       imageStore.siteLocationPhoto = s.locationPhoto || "";
 
-      // ✅ Show preview again
+      // ? Show preview again
       restoreImagePreview("cust_aadhar_photo", imageStore.aadharPhoto);
       restoreImagePreview("cust_electricity_photo", imageStore.electricityPhoto);
       restoreImagePreview("cust_passbook", imageStore.passbookPhoto);
@@ -1175,6 +2275,21 @@
       struct_back_h.value = st.backH || '';
       struct_len.value = st.len || '';
       struct_width.value = st.width || '';
+      // Restore 3D drawing structures and UI
+      if (Array.isArray(d3.structures) && d3.structures.length) {
+        structuresData = JSON.parse(JSON.stringify(d3.structures));
+        // ensure nextId is higher than any restored id
+        try { nextId = Math.max(nextId || 1, ...structuresData.map(s=>s.id))+1; } catch(e) {}
+        renderSidebarUI();
+        rebuildScene();
+      }
+      if (document.getElementById('uiWasteMargin')) {
+        document.getElementById('uiWasteMargin').value = d3.wasteMargin || '0';
+        document.getElementById('valWasteMargin').innerText = d3.wasteMargin || '0';
+      }
+      if (document.getElementById('uiAnnotations')) {
+        document.getElementById('uiAnnotations').checked = !!d3.showAnnotations;
+      }
       struct_bw_kgpm.value = st.bwKgpm || '';
       struct_len_kgpm.value = st.lenKgpm || '';
       struct_found.value = st.foundation || '';
@@ -1307,6 +2422,32 @@
       document.getElementById("btnUpdateLocal").disabled = !isExisting || !loadedCustomerKey;
     }
 
+    // Google Drive mirror configuration. These values are supplied by the
+    // Google Apps Script web app in GoogleDriveSync.gs. Browser data remains
+    // available offline; every save also sends a complete copy to Drive.
+    const DRIVE_SYNC_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_EXEC_URL_HERE";
+    const DRIVE_SYNC_SECRET = "PASTE_THE_SAME_SHARED_SECRET_HERE";
+
+    function syncToGoogleDrive() {
+      if (!DRIVE_SYNC_URL.startsWith("https://script.google.com/") ||
+          DRIVE_SYNC_SECRET.startsWith("PASTE_")) return;
+
+      const data = {
+        customers: JSON.parse(localStorage.getItem("solar_customers") || "{}"),
+        backups: JSON.parse(localStorage.getItem("solar_backups") || "{}"),
+        boqMasterItems: JSON.parse(localStorage.getItem("boqMasterItems") || "[]"),
+        boqRows: JSON.parse(localStorage.getItem("boqRows") || "[]")
+      };
+
+      // no-cors keeps this compatible with an HTML file opened directly from Drive/disk.
+      // The Apps Script endpoint validates the shared secret before writing.
+      fetch(DRIVE_SYNC_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ secret: DRIVE_SYNC_SECRET, data })
+      }).catch(error => console.warn("Google Drive sync failed:", error));
+    }
     function saveLocal(silent=false) {
       const isExisting = document.querySelector('input[name="custType"]:checked').value === 'existing';
       if (isExisting) {
@@ -1322,8 +2463,9 @@
       }
       all[key] = getFormData();
       localStorage.setItem("solar_customers", JSON.stringify(all));
+      syncToGoogleDrive();
       loadCustomerList(key);
-      if (!silent) alert("Saved locally");
+      if (!silent) alert("Saved locally. Google Drive sync will run when configured.");
     }
 
     
@@ -1353,6 +2495,7 @@
 
       all[loadedCustomerKey] = getFormData();
       localStorage.setItem("solar_customers", JSON.stringify(all));
+      syncToGoogleDrive();
       loadCustomerList(loadedCustomerKey);
       if (!silent) alert("Updated");
       setControlsState();
@@ -1366,6 +2509,7 @@
       if (!confirm(`Delete ${key}? This cannot be undone.`)) return;
       delete all[key];
       localStorage.setItem("solar_customers", JSON.stringify(all));
+      syncToGoogleDrive();
       loadCustomerList();
 
       if (loadedCustomerKey === key) {
@@ -1381,7 +2525,7 @@
       const name = cust_name.value.trim() || "Untitled";
       const mobile = cust_mobile.value.trim();
       const timestamp = new Date().toLocaleString();
-      return `${name}${mobile ? ` | ${mobile}` : ""} — ${timestamp}`;
+      return `${name}${mobile ? ` | ${mobile}` : ""} • ${timestamp}`;
     }
 
     function fileToBase64(file) {
@@ -1409,6 +2553,7 @@
       };
       try {
         localStorage.setItem("solar_backups", JSON.stringify(all));
+        syncToGoogleDrive();
         loadBackupList(backupKey);
         alert("Backup saved. Click 'Export ZIP Backup' to save photos.");
       } catch (error) {
@@ -1652,6 +2797,7 @@
         const existingCustomers = JSON.parse(localStorage.getItem("solar_customers") || "{}");
         const merged = { ...existingCustomers, ...imported.allCustomers };
         localStorage.setItem("solar_customers", JSON.stringify(merged));
+        syncToGoogleDrive();
         loadCustomerList();
       }
 
@@ -1808,6 +2954,7 @@
       if (!confirm("Delete this backup? This cannot be undone.")) return;
       delete all[key];
       localStorage.setItem("solar_backups", JSON.stringify(all));
+        syncToGoogleDrive();
       loadBackupList();
       showDataStatus();
     }
@@ -2111,6 +3258,42 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
     }
 
     // Export PDF (each tab as a page)
+    async function capture3DDrawingImage() {
+      // Ensure 3D panel is visible so the canvas has layout and size
+      const prevActive = document.querySelector('.panel.active')?.dataset.tab || null;
+      let switched = false;
+      if (prevActive !== '3D-Drawing') {
+        activate('3D-Drawing');
+        switched = true;
+        // allow layout to settle
+        await new Promise(r => setTimeout(r, 250));
+      }
+
+      // Force renderer to update sizes and render
+      try {
+        updateRendererSize();
+      } catch (e) { /* ignore */ }
+      try { renderer.render(scene, camera); } catch(e) {}
+      try { labelRenderer.render(scene, camera); } catch(e) {}
+
+      const canvasElement = document.getElementById('canvas-container');
+      let imgData = null;
+      try {
+        const canvas = await html2canvas(canvasElement, { backgroundColor: window.getComputedStyle(canvasElement).backgroundColor || '#ffffff' });
+        imgData = canvas.toDataURL('image/png');
+      } catch (err) {
+        console.error('capture3DDrawingImage error', err);
+      }
+
+      // Restore previous panel if needed
+      if (switched && prevActive) {
+        activate(prevActive);
+        await new Promise(r => setTimeout(r, 150));
+      }
+
+      return imgData;
+    }
+
     async function exportPdf() {
       const d = getFormData();
       const { jsPDF } = window.jspdf || {};
@@ -2120,23 +3303,39 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
 
       function drawHeader(sectionName) {
         const w = doc.internal.pageSize.getWidth();
-        doc.setFillColor(240, 90, 40);
-        doc.rect(0, 0, w, 78, "F");
 
-        doc.setTextColor(255, 255, 255);
+        // Top accent bar
+        doc.setFillColor(245, 146, 49);
+        doc.rect(0, 0, w, 32, "F");
+
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("Solar Site Survey", 40, 34);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-        doc.text(sectionName, 40, 58);
+        doc.setFontSize(14);
+        doc.setTextColor(255, 255, 255);
+        doc.text("PRAVAN GROUP", 20, 22);
 
-        doc.setTextColor(31, 22, 15);
-        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text("Multi-Structure Solar Design Report", 20, 34);
+
+        // Divider line
+        doc.setDrawColor(221, 221, 221);
+        doc.setLineWidth(0.8);
+        doc.line(20, 42, w - 20, 42);
+
+        // Section heading
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(34, 34, 34);
+        doc.text(sectionName, 20, 58);
+
+        // Customer / date details
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
         const line1 = `Customer: ${d.customer.name || "-"}   |   Mobile: ${d.customer.mobile || "-"}`;
         const line2 = `Survey Date: ${d.site.date || "-"}   |   Generated: ${new Date().toLocaleString()}`;
-        doc.text(line1, 40, 98);
-        doc.text(line2, 40, 114);
+        doc.text(line1, 20, 72);
+        doc.text(line2, 20, 86);
       }
 
       function addTable(sectionName, columns, rows, opts={}) {
@@ -2322,6 +3521,102 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
         if (idx > 0) doc.addPage();
         addTable(s.name, s.columns, s.rows, { summaryLines: s.summaryLines });
       });
+
+      // Capture and append 3D drawing as an extra page (if possible)
+      try {
+        const img3D = await capture3DDrawingImage();
+        if (img3D) {
+          doc.addPage();
+          drawHeader('3D Drawing');
+          const pageW = doc.internal.pageSize.getWidth();
+          const margin = 40;
+          const imgProps = doc.getImageProperties(img3D);
+          const maxW = pageW - (margin * 2);
+          const imgH = (imgProps.height * maxW) / imgProps.width;
+          const x = margin;
+          const y = 120;
+          doc.addImage(img3D, 'PNG', x, y, maxW, imgH);
+
+          // Add Structure Specifications & Combined BOM under the image (improved layout)
+          try {
+            const startY = y + imgH + 36; // increased spacing to avoid overlap
+            const leftX = 40;
+            const rightX = pageW / 2 + 20;
+            const colWidth = (pageW / 2) - (margin + 10);
+
+            // Headings
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(11, 99, 184); // blue heading
+            doc.text(`Structure Specifications (${structuresData.length} Sets)`, leftX, startY);
+            doc.text("Combined Bill of Materials", rightX, startY);
+
+            // Left column: structure specs
+            let yLeft = startY + 14;
+            doc.setFontSize(9);
+            structuresData.forEach((st) => {
+              const angleEl = document.getElementById(`cut_angle_${st.id}`);
+              const raftEl = document.getElementById(`cut_rafter_${st.id}`);
+              const purlEl = document.getElementById(`cut_purlin_${st.id}`);
+              const angle = angleEl ? angleEl.innerText : (st.angleDeg || '-');
+              const raft = raftEl ? raftEl.innerText : (st.rafterLength ? st.rafterLength.toFixed(2) + ' ft' : '-');
+              const purl = purlEl ? purlEl.innerText : (st.commonPurlinLength ? st.commonPurlinLength.toFixed(2) + ' ft' : '-');
+
+              doc.setFont("helvetica", "bold");
+              doc.setTextColor(31, 22, 15); // ensure set line is black
+              doc.text(`Set #${st.id}: Width ${st.width}ft, Rows ${st.rows}, Panels ${st.rowCols.reduce((a,b)=>a+b,0)}`, leftX, yLeft);
+              yLeft += 12;
+              doc.setFont("helvetica", "normal");
+              doc.setTextColor(0, 120, 0);
+              const cutLine = `Cut Sizes -> Angle: ${angle} | Rafter: ${raft} | Purlin: ${purl}`;
+              const wrapped = doc.splitTextToSize(cutLine, colWidth);
+              doc.text(wrapped, leftX, yLeft);
+              yLeft += (wrapped.length * 12) + 8;
+              doc.setTextColor(50, 50, 50);
+            });
+
+            // Right column: BOM
+            const wasteMarginVal = document.getElementById('uiWasteMargin') ? document.getElementById('uiWasteMargin').value : '0';
+            const bomItems = [
+              { txt: `Total Combined Panels: ${document.getElementById('outTotalPanels')?.innerText || '0'}`, bold: true },
+              { txt: ``, bold: false },
+              { txt: `BILL OF MATERIALS (Includes ${wasteMarginVal}% Waste):`, bold: true },
+              { txt: `80x40x2mm Channel (21ft): ${document.getElementById('bom80')?.innerText || '0 pcs'}`, bold: false },
+              { txt: `41x41x2mm Channel (21ft): ${document.getElementById('bom41')?.innerText || '0 pcs'}`, bold: false },
+              { txt: `Base Plates: ${document.getElementById('bomPlates')?.innerText || '0 pcs'}`, bold: false },
+              { txt: `Fasteners (Anchors): ${document.getElementById('bomFastners')?.innerText || '0 pcs'}`, bold: false },
+              { txt: `Structure Nuts & Bolts: ${document.getElementById('bomBolts')?.innerText || '0 sets'}`, bold: false },
+              { txt: `End Clamps: ${document.getElementById('bomEndClamps')?.innerText || '0 pcs'}`, bold: false },
+              { txt: `Mid Clamps: ${document.getElementById('bomMidClamps')?.innerText || '0 pcs'}`, bold: false }
+            ];
+
+            let yRight = startY + 12;
+            doc.setFontSize(9);
+            bomItems.forEach(item => {
+              if (item.bold) doc.setFont("helvetica", "bold"); else doc.setFont("helvetica", "normal");
+              const lines = doc.splitTextToSize(item.txt, colWidth);
+              // render bullets for the detail lines (skip for heading/empty)
+              if (!item.bold && (item.txt.startsWith('80x40') || item.txt.startsWith('41x41') || item.txt.startsWith('Base') || item.txt.startsWith('Fasteners') || item.txt.startsWith('Structure') || item.txt.startsWith('End') || item.txt.startsWith('Mid'))) {
+                // bullet style
+                lines.forEach((ln, i) => {
+                  doc.text(`• ${ln}`, rightX, yRight);
+                  yRight += 14;
+                });
+              } else {
+                lines.forEach(ln => {
+                  doc.text(ln, rightX, yRight);
+                  yRight += 14;
+                });
+              }
+              yRight += 4;
+            });
+          } catch (err) {
+            console.error('Could not write structure/BOM on 3D page', err);
+          }
+        }
+      } catch (err) {
+        console.error('Could not capture 3D drawing for PDF', err);
+      }
 
       const filename = (d.customer.name || "solar-site-survey") + ".pdf";
       await addPhoto(doc, "Aadhar Photo", d.customer.aadharPhoto);
@@ -2515,7 +3810,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
             <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'name',this.innerText)">${item.name}</span></td>
             <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'unit',this.innerText)">${item.unit}</span></td>
             <td><span class="editable" contenteditable="true" onblur="updateMaster(${i},'rate',this.innerText)">${item.rate}</span></td>
-            <td><button class="btn btn-del" onclick="delRow('master',${i})">×</button></td>
+            <td><button class="btn btn-del" onclick="delRow('master',${i})">✖</button></td>
           </tr>`;
       });
     }
@@ -2554,7 +3849,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
             <td style="font-weight:600">₹ ${activeItem.rate}</td>
             <td><input type="number" class="table-input" value="${row.qty}" onchange="updateBOQ(${i}, 'qty', this.value)" min="0" step="1"></td>
             <td style="font-weight:800; color:var(--accent)">₹ ${amount.toLocaleString('en-IN')}</td>
-            <td><button class="btn btn-del" onclick="delRow('boq',${i})">×</button></td>
+            <td><button class="btn btn-del" onclick="delRow('boq',${i})">✖</button></td>
           </tr>`;
       });
       document.getElementById('grandTotal').innerText = grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2});
@@ -2599,6 +3894,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
 
     function saveMasterData() {
       localStorage.setItem('boqMasterItems', JSON.stringify(masterItems));
+      syncToGoogleDrive();
       showDataStatus();
     }
 
@@ -2611,6 +3907,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
 
     function saveBOQData() {
       localStorage.setItem('boqRows', JSON.stringify(boqRows));
+      syncToGoogleDrive();
       showDataStatus();
     }
 
@@ -2632,6 +3929,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
     function clearBOQData() {
       if(confirm('Are you sure you want to clear all BOQ rows? Master items will be preserved.')) {
         localStorage.removeItem('boqRows');
+        syncToGoogleDrive();
         boqRows = [{ selectedMake: "", selectedItem: "", qty: 1 }];
         renderBOQ();
         showDataStatus();
@@ -2700,15 +3998,3 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
