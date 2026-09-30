@@ -794,6 +794,296 @@
       transition: all 120ms ease;
     }
     .btn-del:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+    /* Area & Capacity Calculator Styles */
+    .ac-calc-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .ac-hero-banner {
+      background: linear-gradient(135deg, #fff2e8 0%, #ffe7c8 100%);
+      border: 1px solid #f3dccb;
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ac-hero-banner h3 {
+      margin: 0;
+      color: var(--head);
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ac-hero-banner p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .ac-toolbar-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ac-btn-sm {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid #eadfd7;
+      background: #fff;
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--ink);
+      transition: all 120ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ac-btn-sm:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(31,22,15,0.08);
+      border-color: #f05a28;
+    }
+    .ac-btn-accent {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      color: #1b120c;
+    }
+    .ac-config-card {
+      background: #fff;
+      border: 1px solid #eadfd7;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(31,22,15,0.04);
+    }
+    .ac-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eadfd7;
+      padding-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .ac-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--head);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+    }
+    .ac-pill {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #fff1e7;
+      color: #8b3f10;
+      border: 1px solid #eadfd7;
+    }
+    .ac-pill-green {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-color: #c8e6c9;
+    }
+    .ac-pill-blue {
+      background: #e0f2fe;
+      color: #0288d1;
+      border-color: #bae6fd;
+    }
+    .ac-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .ac-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .ac-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ac-input-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .ac-input-group small {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .ac-input-group input, .ac-input-group select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #eadfd7;
+      font-size: 0.9rem;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .ac-input-group input:focus, .ac-input-group select:focus {
+      outline: none;
+      border-color: #f05a28;
+      box-shadow: 0 0 0 3px rgba(240,90,40,0.15);
+    }
+    .ac-stat-strip {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #eadfd7;
+      flex-wrap: wrap;
+    }
+    .ac-stat-tag {
+      background: #fff7f1;
+      border: 1px solid #eadfd7;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ac-stat-tag strong {
+      color: #8b3f10;
+      font-size: 0.85rem;
+    }
+    .ac-calculator-card {
+      background: #ffffff;
+      border: 1px solid #eadfd7;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(31,22,15,0.04);
+      position: relative;
+    }
+    .ac-calculator-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 16px;
+      right: 16px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+    }
+    .ac-card-capacity::before {
+      background: linear-gradient(90deg, #f05a28, #ffb347);
+    }
+    .ac-card-area::before {
+      background: linear-gradient(90deg, #0288d1, #4fc3f7);
+    }
+    .ac-results-box {
+      background: #fff7f1;
+      border: 1px solid #eadfd7;
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ac-result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.86rem;
+      color: var(--text);
+    }
+    .ac-result-row.main-result {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .ac-main-area {
+      background: linear-gradient(135deg, #fff0e6, #ffe3d1);
+      border: 1px solid #f9cca9;
+      color: #8b3f10;
+    }
+    .ac-main-capacity {
+      background: linear-gradient(135deg, #e1f5fe, #b3e5fc);
+      border: 1px solid #81d4fa;
+      color: #01579b;
+    }
+    .ac-main-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .ac-visual-container {
+      background: #fff;
+      border: 1px solid #eadfd7;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .ac-visual-preview {
+      width: 100%;
+      height: 230px;
+      background: #faf7f5;
+      border: 1px dashed #eadfd7;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .ac-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    .ac-matrix-table th {
+      background: #8b3f10;
+      color: #fff;
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+    .ac-matrix-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eadfd7;
+      font-size: 0.84rem;
+    }
+    .ac-matrix-table tr:hover {
+      background: #fff2e8;
+      cursor: pointer;
+    }
+    .ac-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      z-index: 99999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 250ms ease;
+    }
+    .ac-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
   <style>
     /* Ensure 3D drawing panel layout shows sidebar and canvas side-by-side when active */
@@ -952,6 +1242,311 @@
           </tbody>
         </table>
       </div>
+      <!-- Area & Capacity Calculator -->
+      <div class="panel" data-tab="Area & Capacity">
+        <div class="ac-calc-container">
+          <!-- Top Hero & Action Toolbar -->
+          <div class="ac-hero-banner">
+            <div>
+              <h3><span>📐</span> Solar Area &amp; Capacity Calculator</h3>
+              <p>Bi-directional solar sizing: Calculate Roof Area (sq ft) from Solar Capacity (kW), or Calculate Capacity (kW) from Available Area (sq ft) using module dimensions in feet.</p>
+            </div>
+            <div class="ac-toolbar-btns">
+              <button type="button" class="ac-btn-sm" id="btnAcImportSite">
+                <span>📥</span> Import Area from Site Survey
+              </button>
+              <button type="button" class="ac-btn-sm" id="btnAcImportTech">
+                <span>📥</span> Import from Technical Details
+              </button>
+              <button type="button" class="ac-btn-sm" id="btnAcResetDefaults">
+                <span>🔄</span> Reset Defaults
+              </button>
+            </div>
+          </div>
+
+          <!-- Master Solar Panel Specifications -->
+          <div class="ac-config-card">
+            <div class="ac-card-header">
+              <div class="ac-card-title">
+                <span>☀️</span> Solar Panel Specifications (Module Configurator)
+              </div>
+              <span class="ac-pill ac-pill-green" id="ac_badge_dim">7.45 ft × 3.71 ft (27.64 sq ft)</span>
+            </div>
+            
+            <div class="ac-grid-3">
+              <div class="ac-input-group" style="grid-column: 1 / -1;">
+                <label for="ac_panel_preset">Panel Model Preset</label>
+                <select id="ac_panel_preset">
+                  <option value="550_mono">550W Mono PERC Half-Cut (Height: 7.45 ft, Width: 3.71 ft, 550W) - Most Popular</option>
+                  <option value="580_topcon">580W N-Type TOPCon (Height: 7.48 ft, Width: 3.72 ft, 580W) - High Efficiency</option>
+                  <option value="540_mono">540W Mono PERC (Height: 7.41 ft, Width: 3.71 ft, 540W)</option>
+                  <option value="450_mono">450W Mono PERC (Height: 6.90 ft, Width: 3.40 ft, 450W) - Compact Residential</option>
+                  <option value="330_poly">330W Polycrystalline (Height: 6.43 ft, Width: 3.25 ft, 330W)</option>
+                  <option value="custom">-- Custom Dimensions &amp; Wattage --</option>
+                </select>
+                <small>Select standard commercial module or enter custom height &amp; width in feet below</small>
+              </div>
+
+              <div class="ac-input-group">
+                <label for="calc_panel_w">Panel Width (ft)</label>
+                <input type="number" id="calc_panel_w" value="3.71" step="0.01" min="0.1" placeholder="e.g. 3.71">
+                <small>Width in feet (e.g. 3.71 ft ≈ 1134 mm)</small>
+              </div>
+
+              <div class="ac-input-group">
+                <label for="calc_panel_h">Panel Height / Length (ft)</label>
+                <input type="number" id="calc_panel_h" value="7.45" step="0.01" min="0.1" placeholder="e.g. 7.45">
+                <small>Height in feet (e.g. 7.45 ft ≈ 2278 mm)</small>
+              </div>
+
+              <div class="ac-input-group">
+                <label for="calc_panel_watt">Panel Rated Power (W)</label>
+                <input type="number" id="calc_panel_watt" value="550" step="5" min="1" placeholder="e.g. 550">
+                <small>Watt-peak rating per module</small>
+              </div>
+            </div>
+
+            <div class="ac-stat-strip">
+              <div class="ac-stat-tag">
+                <span>Single Module Area:</span>
+                <strong id="ac_stat_single_area">27.64 sq ft</strong>
+              </div>
+              <div class="ac-stat-tag">
+                <span>Module Power Density:</span>
+                <strong id="ac_stat_density">19.90 W / sq ft</strong>
+              </div>
+              <div class="ac-stat-tag">
+                <span>Net Sizing Rule:</span>
+                <strong id="ac_stat_rule">~50.25 sq ft / kW</strong>
+              </div>
+              <div class="ac-stat-tag">
+                <span>Gross Rule (with 20% clearance):</span>
+                <strong id="ac_stat_gross_rule">~60.31 sq ft / kW</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual Calculators Grid -->
+          <div class="ac-grid-2">
+            <!-- Calculator 1: Capacity -> Area Required -->
+            <div class="ac-calculator-card ac-card-capacity">
+              <div class="ac-card-header">
+                <div class="ac-card-title">
+                  <span>⚡</span> Calculate Area from Capacity
+                </div>
+                <span class="ac-pill">Capacity ➔ Area</span>
+              </div>
+              <p style="margin: 0; font-size: 0.82rem; color: var(--muted);">
+                Enter your desired solar system capacity in kW to determine how much rooftop or ground area in square feet is required for installation.
+              </p>
+
+              <div class="ac-input-group">
+                <label for="calc_target_kw">Target System Capacity (kW)</label>
+                <input type="number" id="calc_target_kw" value="5.0" step="0.1" min="0.1" placeholder="e.g. 5.0">
+                <small>Required solar power output in kW</small>
+              </div>
+
+              <div class="ac-input-group">
+                <label for="calc_clearance_pct">Installation Walkway &amp; Shadow Clearance</label>
+                <select id="calc_clearance_pct">
+                  <option value="20">+20% Standard Rooftop (Recommended: walkways &amp; tilt shadow space)</option>
+                  <option value="0">+0% Net Panel Footprint Only (Flush / Tin shed mounting)</option>
+                  <option value="10">+10% Sloped Shed / Minimal Access Corridor</option>
+                  <option value="15">+15% Compact RCC Rooftop</option>
+                  <option value="25">+25% Generous Access &amp; Inverter Maintenance Aisle</option>
+                  <option value="30">+30% Ground Mount / Elevated High Gazebo Structure</option>
+                </select>
+                <small>Extra area margin for cleaning pathways, parapet setback &amp; tilt shadow</small>
+              </div>
+
+              <!-- Output Results Box -->
+              <div class="ac-results-box">
+                <div class="ac-result-row">
+                  <span>Modules Required:</span>
+                  <strong id="ac_res_panels_needed" style="color:var(--head); font-size:1rem;">10 Modules</strong>
+                </div>
+                <div class="ac-result-row">
+                  <span>Realized Capacity:</span>
+                  <strong id="ac_res_realized_kw">5.50 kW</strong>
+                </div>
+                <div class="ac-result-row">
+                  <span>Net Module Surface Area:</span>
+                  <strong id="ac_res_net_area">276.4 sq ft</strong>
+                </div>
+                <div class="ac-result-row">
+                  <span>Walkway &amp; Clearance Space:</span>
+                  <strong id="ac_res_clearance_area">+55.3 sq ft (20%)</strong>
+                </div>
+                
+                <div class="ac-result-row main-result ac-main-area">
+                  <div>
+                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">Recommended Total Roof Area</div>
+                    <div style="font-size:0.72rem; color:var(--muted); font-weight:normal;">Required to install this capacity</div>
+                  </div>
+                  <div class="ac-main-val" id="ac_res_gross_area">331.7 sq ft</div>
+                </div>
+
+                <div class="ac-result-row" style="font-size:0.78rem; color:var(--muted); margin-top:2px;">
+                  <span>Approx. Installation Footprint:</span>
+                  <strong id="ac_res_dim_est">~22.4 ft × 14.8 ft</strong>
+                </div>
+              </div>
+
+              <!-- Quick Action Sync Buttons -->
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:auto;">
+                <button type="button" class="ac-btn-sm ac-btn-accent" id="btnAcApplyToSite" style="flex:1;">
+                  📋 Copy Area to Site Survey (sqft)
+                </button>
+                <button type="button" class="ac-btn-sm" id="btnAcApplyToTech1" style="flex:1;">
+                  📋 Copy to Technical Details
+                </button>
+              </div>
+            </div>
+
+            <!-- Calculator 2: Area -> Capacity Installable -->
+            <div class="ac-calculator-card ac-card-area">
+              <div class="ac-card-header">
+                <div class="ac-card-title">
+                  <span>📐</span> Calculate Capacity from Area
+                </div>
+                <span class="ac-pill ac-pill-blue">Area ➔ Capacity</span>
+              </div>
+              <p style="margin: 0; font-size: 0.82rem; color: var(--muted);">
+                Enter available rooftop or ground area in square feet (or specify Length &amp; Width in feet) to determine how much solar capacity can fit.
+              </p>
+
+              <!-- Dimension Helper Grid -->
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+                <div style="font-size:0.78rem; font-weight:700; color:#475569; margin-bottom:6px; display:flex; justify-content:space-between;">
+                  <span>Optional: Calculate Area from Dimensions (ft)</span>
+                  <span style="font-weight:normal; color:#64748b;">Length (ft) × Width (ft)</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <div class="ac-input-group">
+                    <label for="calc_area_len">Roof Length (ft)</label>
+                    <input type="number" id="calc_area_len" value="30" step="0.5" min="1" placeholder="e.g. 30">
+                  </div>
+                  <div class="ac-input-group">
+                    <label for="calc_area_wid">Roof Width (ft)</label>
+                    <input type="number" id="calc_area_wid" value="20" step="0.5" min="1" placeholder="e.g. 20">
+                  </div>
+                </div>
+              </div>
+
+              <div class="ac-input-group">
+                <label for="calc_avail_area">Available Area (sq ft)</label>
+                <input type="number" id="calc_avail_area" value="600" step="1" min="1" placeholder="e.g. 600">
+                <small>Total available physical space in square feet</small>
+              </div>
+
+              <div class="ac-input-group">
+                <label for="calc_usable_pct">Usable Area Utilization Factor (%)</label>
+                <select id="calc_usable_pct">
+                  <option value="80">80% Standard Rooftop (20% reserved for edges, obstacles &amp; shadows)</option>
+                  <option value="100">100% Full Rooftop (Pure panel coverage / unobstructed shed)</option>
+                  <option value="85">85% Minimal Obstacles / Clear RCC Terrace</option>
+                  <option value="75">75% Moderate Obstacles (Mumty, tanks, AC outdoor units)</option>
+                  <option value="65">65% Complex Roof with High Chimneys / Parapets</option>
+                </select>
+                <small>Percentage of area actually viable for panel structure mounting</small>
+              </div>
+
+              <!-- Output Results Box -->
+              <div class="ac-results-box">
+                <div class="ac-result-row">
+                  <span>Usable Solar Area:</span>
+                  <strong id="ac_res_usable_sqft">480.0 sq ft (80%)</strong>
+                </div>
+                <div class="ac-result-row">
+                  <span>Max Modules Accommodated:</span>
+                  <strong id="ac_res_max_panels" style="color:#0288d1; font-size:1rem;">17 Modules</strong>
+                </div>
+                <div class="ac-result-row">
+                  <span>Actual Utilized Module Space:</span>
+                  <strong id="ac_res_utilized_sqft">469.9 sq ft</strong>
+                </div>
+                <div class="ac-result-row">
+                  <span>Remaining Buffer Space:</span>
+                  <strong id="ac_res_buffer_sqft">130.1 sq ft (21.7%)</strong>
+                </div>
+
+                <div class="ac-result-row main-result ac-main-capacity">
+                  <div>
+                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">Max Installable Solar Capacity</div>
+                    <div style="font-size:0.72rem; color:var(--muted); font-weight:normal;">Based on available area</div>
+                  </div>
+                  <div class="ac-main-val" id="ac_res_max_kw">9.35 kW</div>
+                </div>
+
+                <div class="ac-result-row" style="font-size:0.78rem; color:var(--muted); margin-top:2px;">
+                  <span>Estimated Annual Energy:</span>
+                  <strong id="ac_res_est_units">~13,651 Units / Year</strong>
+                </div>
+              </div>
+
+              <!-- Quick Action Sync Buttons -->
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:auto;">
+                <button type="button" class="ac-btn-sm" id="btnAcImportSiteFromCard" style="flex:1;">
+                  📥 Pull from Site Survey
+                </button>
+                <button type="button" class="ac-btn-sm ac-btn-accent" id="btnAcApplyToTech2" style="flex:1;">
+                  📋 Copy to Technical Details
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive 2D Visual Footprint & Array Preview -->
+          <div class="ac-visual-container">
+            <div class="ac-card-header">
+              <div class="ac-card-title">
+                <span>📐</span> Visual Rooftop Footprint &amp; Module Array Blueprint
+              </div>
+              <span class="ac-pill ac-pill-green" id="ac_vis_summary_badge">30 ft × 20 ft Roof | 17 Modules (9.35 kW)</span>
+            </div>
+            <p style="margin: 0 0 8px 0; font-size: 0.82rem; color: var(--muted);">
+              Scaled 2D blueprint representation showing rooftop dimensions in feet and module placement. Updates interactively in real time.
+            </p>
+
+            <div class="ac-visual-preview" id="ac_svg_container">
+              <!-- Rendered via JavaScript SVG -->
+            </div>
+          </div>
+
+          <!-- Quick Capacity vs Area Lookup Matrix -->
+          <div class="ac-config-card">
+            <div class="ac-card-header">
+              <div class="ac-card-title">
+                <span>📊</span> Quick Capacity &amp; Area Reference Matrix
+              </div>
+              <span class="ac-pill">Click any row to load into calculator</span>
+            </div>
+            <p style="margin: 0 0 10px 0; font-size: 0.82rem; color: var(--muted);">
+              Instant engineering reference table calculated using currently selected module dimensions (<span id="ac_matrix_mod_dim">7.45 ft × 3.71 ft, 550W</span>):
+            </p>
+
+            <div style="overflow-x: auto;">
+              <table class="ac-matrix-table" id="acMatrixTable">
+                <thead>
+                  <tr>
+                    <th>Plant Capacity</th>
+                    <th>Modules (Qty)</th>
+                    <th>Realized kW</th>
+                    <th>Net Module Area (sq ft)</th>
+                    <th>Recommended Roof Area (sq ft)</th>
+                    <th>Approx. Dimensions (ft × ft)</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="acMatrixTableBody">
+                  <!-- Dynamically populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Load Calculator -->
       <div class="panel" data-tab="Load Calculator">
         <div class="load-toolbar">
@@ -2642,7 +3237,7 @@
                 rowSlidersHTML += `
                   <div class="control-group">
                     <label>Row ${r+1} Modules <span id="val_s${st.id}_r${r}">${st.rowCols[r]}</span></label>
-                    <input type="range" min="0" max="20" step="1" value="${st.rowCols[r]}" data-id="${st.id}" data-row="${r}" class="row-slider">
+                    <input type="range" min="0" max="200" step="1" value="${st.rowCols[r]}" data-id="${st.id}" data-row="${r}" class="row-slider">
                   </div>
                 `;
               }
@@ -2685,7 +3280,7 @@
                 </div>
                 <div class="control-group">
                   <label>Panel Rows <span id="val_s${st.id}_rows">${st.rows}</span></label>
-                  <input type="range" min="1" max="5" step="1" value="${st.rows}" data-id="${st.id}" data-param="rows" class="param-slider">
+                  <input type="range" min="1" max="50" step="1" value="${st.rows}" data-id="${st.id}" data-param="rows" class="param-slider">
                 </div>
                 ${rowSlidersHTML}
                 <div class="control-group">
@@ -3634,7 +4229,7 @@
     handleImageInput("cust_loan_proof_photo", "loanProofPhoto");
     handleImageInput("site_location_photo", "siteLocationPhoto");
 
-    const tabNames = ["Customer Details","Site Survey","Load Calculator","Technical Details","Cable Details","3D-Drawing","Structure Details","BOQ","Costing"];
+    const tabNames = ["Customer Details","Site Survey","Area & Capacity","Load Calculator","Technical Details","Cable Details","3D-Drawing","Structure Details","BOQ","Costing"];
     const tabs = document.getElementById('tabs');
     tabNames.forEach((name,i) => {
       const t = document.createElement('div');
@@ -3916,6 +4511,18 @@
           longitude: site_longitude.value,
           locationPhoto: imageStore.siteLocationPhoto
         },
+        areaCalc: {
+          panelPreset: (document.getElementById("ac_panel_preset") || {}).value || "",
+          panelW: (document.getElementById("calc_panel_w") || {}).value || "",
+          panelH: (document.getElementById("calc_panel_h") || {}).value || "",
+          panelWatt: (document.getElementById("calc_panel_watt") || {}).value || "",
+          targetKw: (document.getElementById("calc_target_kw") || {}).value || "",
+          clearancePct: (document.getElementById("calc_clearance_pct") || {}).value || "",
+          areaLen: (document.getElementById("calc_area_len") || {}).value || "",
+          areaWid: (document.getElementById("calc_area_wid") || {}).value || "",
+          availArea: (document.getElementById("calc_avail_area") || {}).value || "",
+          usablePct: (document.getElementById("calc_usable_pct") || {}).value || ""
+        },
         loadCalc: {
           copyMode: (document.getElementById("load_copy_mode") || {}).value || "diversified",
           items: getLoadItems()
@@ -3987,6 +4594,7 @@
       if (!data) return;
       const c = data.customer || {};
       const s = data.site || {};
+      const ac = data.areaCalc || {};
       const lc = data.loadCalc || {};
       const t = data.technical || {};
       const st = data.structure || {};
@@ -4043,6 +4651,20 @@
       site_by.value = s.surveyedBy || '';
       site_latitude.value = s.latitude || '';
       site_longitude.value = s.longitude || '';
+
+      if (document.getElementById('calc_panel_w')) {
+        if (ac.panelPreset) document.getElementById('ac_panel_preset').value = ac.panelPreset;
+        if (ac.panelW) document.getElementById('calc_panel_w').value = ac.panelW;
+        if (ac.panelH) document.getElementById('calc_panel_h').value = ac.panelH;
+        if (ac.panelWatt) document.getElementById('calc_panel_watt').value = ac.panelWatt;
+        if (ac.targetKw) document.getElementById('calc_target_kw').value = ac.targetKw;
+        if (ac.clearancePct) document.getElementById('calc_clearance_pct').value = ac.clearancePct;
+        if (ac.areaLen) document.getElementById('calc_area_len').value = ac.areaLen;
+        if (ac.areaWid) document.getElementById('calc_area_wid').value = ac.areaWid;
+        if (ac.availArea) document.getElementById('calc_avail_area').value = ac.availArea;
+        if (ac.usablePct) document.getElementById('calc_usable_pct').value = ac.usablePct;
+        if (typeof updateAreaCalc === 'function') updateAreaCalc();
+      }
 
       const copyModeEl = document.getElementById("load_copy_mode");
       if (copyModeEl) copyModeEl.value = lc.copyMode || "diversified";
@@ -4964,6 +5586,28 @@
           ["Surveyed By", d.site.surveyedBy]
         ]
       ), "Site Survey");
+
+      if (d.areaCalc && (d.areaCalc.targetKw || d.areaCalc.availArea)) {
+        const pw = parseFloat(d.areaCalc.panelW) || 3.71;
+        const ph = parseFloat(d.areaCalc.panelH) || 7.45;
+        const singleA = (pw * ph).toFixed(2);
+        XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Area & Capacity",
+          ["Parameter", "Value", "Unit"],
+          [
+            ["Panel Model Preset", d.areaCalc.panelPreset || "-", "-"],
+            ["Panel Width", d.areaCalc.panelW || "3.71", "ft"],
+            ["Panel Height", d.areaCalc.panelH || "7.45", "ft"],
+            ["Single Panel Area", singleA, "sq ft"],
+            ["Panel Rated Wattage", d.areaCalc.panelWatt || "550", "W"],
+            ["Target System Capacity", d.areaCalc.targetKw || "5.0", "kW"],
+            ["Installation Spacing / Clearance", d.areaCalc.clearancePct || "20", "%"],
+            ["Roof Length", d.areaCalc.areaLen || "30", "ft"],
+            ["Roof Width", d.areaCalc.areaWid || "20", "ft"],
+            ["Available Physical Area", d.areaCalc.availArea || "600", "sq ft"],
+            ["Usable Roof Utilization", d.areaCalc.usablePct || "80", "%"]
+          ]
+        ), "Area & Capacity");
+      }
       const loadItems = (d.loadCalc || {}).items || [];
       const loadRows = loadItems.map(it => {
         return [it.name || "", it.qty || "", it.watt || "", it.hours || "", (it.df ?? "") || ""];
@@ -6084,6 +6728,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
           calcDCVoltageDrop();
           checkInverterMPPT();
           calcSolarROI();
+          if (typeof updateAreaCalc === 'function') updateAreaCalc();
           toast.remove();
         });
 
@@ -6095,6 +6740,433 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
       }
     }
 
+    // ==========================================
+    // AREA & CAPACITY CALCULATOR ENGINE
+    // ==========================================
+    function showAcToast(msg) {
+      let t = document.getElementById('acToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'acToast';
+        t.className = 'ac-toast';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => { t.classList.remove('show'); }, 2600);
+    }
+
+    const AC_PANEL_PRESETS = {
+      '550_mono': { w: 3.71, h: 7.45, watt: 550 },
+      '580_topcon': { w: 3.72, h: 7.48, watt: 580 },
+      '540_mono': { w: 3.71, h: 7.41, watt: 540 },
+      '450_mono': { w: 3.40, h: 6.90, watt: 450 },
+      '330_poly': { w: 3.25, h: 6.43, watt: 330 }
+    };
+
+    function updateAreaCalc(source) {
+      const elW = document.getElementById('calc_panel_w');
+      const elH = document.getElementById('calc_panel_h');
+      const elWatt = document.getElementById('calc_panel_watt');
+      if (!elW || !elH || !elWatt) return;
+
+      const pW = Math.max(0.1, parseFloat(elW.value) || 3.71);
+      const pH = Math.max(0.1, parseFloat(elH.value) || 7.45);
+      const pWatt = Math.max(1, parseFloat(elWatt.value) || 550);
+      const singleArea = pW * pH; // sq ft
+
+      // Update Module Spec Badges
+      const badgeDim = document.getElementById('ac_badge_dim');
+      if (badgeDim) badgeDim.textContent = `${pH.toFixed(2)} ft × ${pW.toFixed(2)} ft (${singleArea.toFixed(2)} sq ft)`;
+
+      const statArea = document.getElementById('ac_stat_single_area');
+      if (statArea) statArea.textContent = `${singleArea.toFixed(2)} sq ft`;
+
+      const powerDensity = (pWatt / singleArea); // W / sq ft
+      const statDensity = document.getElementById('ac_stat_density');
+      if (statDensity) statDensity.textContent = `${powerDensity.toFixed(2)} W / sq ft`;
+
+      const netRule = (1000 / powerDensity); // sq ft / kW net
+      const statRule = document.getElementById('ac_stat_rule');
+      if (statRule) statRule.textContent = `~${netRule.toFixed(1)} sq ft / kW`;
+
+      const grossRule = netRule * 1.20; // 20% clearance
+      const statGross = document.getElementById('ac_stat_gross_rule');
+      if (statGross) statGross.textContent = `~${grossRule.toFixed(1)} sq ft / kW`;
+
+      const matrixModDim = document.getElementById('ac_matrix_mod_dim');
+      if (matrixModDim) matrixModDim.textContent = `${pH.toFixed(2)} ft × ${pW.toFixed(2)} ft, ${pWatt}W`;
+
+      // ----------------------------------------------------
+      // MODE A: Capacity -> Area Required
+      // ----------------------------------------------------
+      const elTargetKw = document.getElementById('calc_target_kw');
+      const targetKw = Math.max(0.1, parseFloat(elTargetKw ? elTargetKw.value : 5) || 5);
+      const elClearance = document.getElementById('calc_clearance_pct');
+      const clearancePct = parseFloat(elClearance ? elClearance.value : 20) || 0;
+
+      // Modules required = ceil( (targetKw * 1000) / pWatt )
+      const panelsNeeded = Math.ceil((targetKw * 1000) / pWatt);
+      const realizedKw = (panelsNeeded * pWatt) / 1000;
+      const netAreaReq = panelsNeeded * singleArea;
+      const clearanceArea = netAreaReq * (clearancePct / 100);
+      const grossAreaReq = netAreaReq + clearanceArea;
+
+      // Approx dimensions (assume aspect ratio ~ 1.5:1)
+      const estW = Math.sqrt(grossAreaReq / 1.5);
+      const estL = estW * 1.5;
+
+      const resPanels = document.getElementById('ac_res_panels_needed');
+      if (resPanels) resPanels.textContent = `${panelsNeeded} Modules`;
+
+      const resRealized = document.getElementById('ac_res_realized_kw');
+      if (resRealized) resRealized.textContent = `${realizedKw.toFixed(2)} kW`;
+
+      const resNet = document.getElementById('ac_res_net_area');
+      if (resNet) resNet.textContent = `${netAreaReq.toFixed(1)} sq ft`;
+
+      const resClearance = document.getElementById('ac_res_clearance_area');
+      if (resClearance) resClearance.textContent = `+${clearanceArea.toFixed(1)} sq ft (${clearancePct}%)`;
+
+      const resGross = document.getElementById('ac_res_gross_area');
+      if (resGross) resGross.textContent = `${grossAreaReq.toFixed(1)} sq ft`;
+
+      const resDimEst = document.getElementById('ac_res_dim_est');
+      if (resDimEst) resDimEst.textContent = `~${estL.toFixed(1)} ft × ${estW.toFixed(1)} ft`;
+
+      // ----------------------------------------------------
+      // MODE B: Area -> Capacity Installable
+      // ----------------------------------------------------
+      const elAreaLen = document.getElementById('calc_area_len');
+      const elAreaWid = document.getElementById('calc_area_wid');
+      const elAvailArea = document.getElementById('calc_avail_area');
+      const elUsablePct = document.getElementById('calc_usable_pct');
+
+      let availArea = parseFloat(elAvailArea ? elAvailArea.value : 600) || 600;
+      let lenFt = parseFloat(elAreaLen ? elAreaLen.value : 30) || 30;
+      let widFt = parseFloat(elAreaWid ? elAreaWid.value : 20) || 20;
+
+      if (source === 'dimensions') {
+        availArea = Math.max(1, lenFt * widFt);
+        if (elAvailArea) elAvailArea.value = Math.round(availArea);
+      } else if (source === 'availArea') {
+        lenFt = Math.sqrt(availArea * 1.5);
+        widFt = availArea / lenFt;
+        if (elAreaLen) elAreaLen.value = lenFt.toFixed(1);
+        if (elAreaWid) elAreaWid.value = widFt.toFixed(1);
+      }
+
+      const usablePct = parseFloat(elUsablePct ? elUsablePct.value : 80) || 80;
+      const usableArea = availArea * (usablePct / 100);
+      const maxPanels = Math.floor(usableArea / singleArea);
+      const maxKw = (maxPanels * pWatt) / 1000;
+      const utilizedArea = maxPanels * singleArea;
+      const bufferArea = Math.max(0, availArea - utilizedArea);
+      const bufferPct = (bufferArea / availArea) * 100;
+      const estAnnualUnits = Math.round(maxKw * 4.0 * 365); // 4 units/kW/day average
+
+      const resUsable = document.getElementById('ac_res_usable_sqft');
+      if (resUsable) resUsable.textContent = `${usableArea.toFixed(1)} sq ft (${usablePct}%)`;
+
+      const resMaxPanels = document.getElementById('ac_res_max_panels');
+      if (resMaxPanels) resMaxPanels.textContent = `${maxPanels} Modules`;
+
+      const resMaxKw = document.getElementById('ac_res_max_kw');
+      if (resMaxKw) resMaxKw.textContent = `${maxKw.toFixed(2)} kW`;
+
+      const resUtilized = document.getElementById('ac_res_utilized_sqft');
+      if (resUtilized) resUtilized.textContent = `${utilizedArea.toFixed(1)} sq ft`;
+
+      const resBuffer = document.getElementById('ac_res_buffer_sqft');
+      if (resBuffer) resBuffer.textContent = `${bufferArea.toFixed(1)} sq ft (${bufferPct.toFixed(1)}%)`;
+
+      const resUnits = document.getElementById('ac_res_est_units');
+      if (resUnits) resUnits.textContent = `~${estAnnualUnits.toLocaleString()} Units / Year`;
+
+      // Update Visual SVG Blueprint
+      renderAcSvg(lenFt, widFt, pW, pH, maxPanels, maxKw, usablePct);
+
+      // Update Reference Matrix
+      renderAcMatrix(singleArea, pWatt, clearancePct);
+    }
+
+    function renderAcSvg(roofL, roofW, pW, pH, maxPanels, maxKw, usablePct) {
+      const container = document.getElementById('ac_svg_container');
+      const badge = document.getElementById('ac_vis_summary_badge');
+      if (badge) badge.textContent = `${roofL.toFixed(1)} ft × ${roofW.toFixed(1)} ft Roof | ${maxPanels} Modules (${maxKw.toFixed(2)} kW)`;
+      if (!container) return;
+
+      const svgW = 480;
+      const svgH = 200;
+      const margin = 26;
+      const drawW = svgW - margin * 2;
+      const drawH = svgH - margin * 2;
+
+      const scale = Math.min(drawW / Math.max(roofL, 1), drawH / Math.max(roofW, 1));
+      const rWidthPx = roofL * scale;
+      const rHeightPx = roofW * scale;
+      const rX = margin + (drawW - rWidthPx) / 2;
+      const rY = margin + (drawH - rHeightPx) / 2;
+
+      // Usable inset box
+      const insetFactor = Math.sqrt(usablePct / 100);
+      const uWidthPx = rWidthPx * insetFactor;
+      const uHeightPx = rHeightPx * insetFactor;
+      const uX = rX + (rWidthPx - uWidthPx) / 2;
+      const uY = rY + (rHeightPx - uHeightPx) / 2;
+
+      // Module dimensions in SVG (portrait orientation)
+      const pWPx = Math.max(3, pW * scale);
+      const pHPx = Math.max(5, pH * scale);
+
+      const cols = Math.max(1, Math.floor(uWidthPx / (pWPx + 1.5)));
+      const rows = Math.max(1, Math.floor(uHeightPx / (pHPx + 2.5)));
+      let placed = 0;
+
+      let modulesSvg = '';
+      const totalToPlace = Math.min(maxPanels, cols * rows);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (placed >= totalToPlace) break;
+          const mx = uX + 3 + c * (pWPx + 1.5);
+          const my = uY + 3 + r * (pHPx + 2.5);
+          modulesSvg += `<rect x="${mx.toFixed(1)}" y="${my.toFixed(1)}" width="${(pWPx).toFixed(1)}" height="${(pHPx).toFixed(1)}" fill="#0b1c2d" stroke="#60a5fa" stroke-width="0.75" rx="1" />
+          <line x1="${(mx + pWPx/2).toFixed(1)}" y1="${my.toFixed(1)}" x2="${(mx + pWPx/2).toFixed(1)}" y2="${(my + pHPx).toFixed(1)}" stroke="#93c5fd" stroke-width="0.4" />`;
+          placed++;
+        }
+      }
+
+      container.innerHTML = `
+        <svg viewBox="0 0 ${svgW} ${svgH}" style="width:100%; height:100%; display:block;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="acGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+              <path d="M 16 0 L 0 0 0 16" fill="none" stroke="#f1e6de" stroke-width="0.8"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#acGrid)" />
+
+          <!-- Outer Roof Boundary -->
+          <rect x="${rX.toFixed(1)}" y="${rY.toFixed(1)}" width="${rWidthPx.toFixed(1)}" height="${rHeightPx.toFixed(1)}" fill="#fdfaf7" stroke="#8b3f10" stroke-width="1.8" rx="4" />
+          
+          <!-- Usable Installation Boundary (Dashed) -->
+          <rect x="${uX.toFixed(1)}" y="${uY.toFixed(1)}" width="${uWidthPx.toFixed(1)}" height="${uHeightPx.toFixed(1)}" fill="rgba(240,90,40,0.04)" stroke="#10b981" stroke-dasharray="3,3" stroke-width="1.2" rx="2" />
+
+          <!-- Solar Modules Array -->
+          ${modulesSvg}
+
+          <!-- Dimension Annotations -->
+          <text x="${(rX + rWidthPx / 2).toFixed(1)}" y="${(rY - 8).toFixed(1)}" text-anchor="middle" fill="#8b3f10" font-size="11" font-weight="700">${roofL.toFixed(1)} ft Length</text>
+          <text x="${(rX - 8).toFixed(1)}" y="${(rY + rHeightPx / 2).toFixed(1)}" text-anchor="middle" fill="#8b3f10" font-size="11" font-weight="700" transform="rotate(-90 ${(rX - 8).toFixed(1)} ${(rY + rHeightPx / 2).toFixed(1)})">${roofW.toFixed(1)} ft Width</text>
+          
+          <!-- Legend Badge -->
+          <g transform="translate(${(rX + 4).toFixed(1)}, ${(rY + rHeightPx - 18).toFixed(1)})">
+            <rect width="180" height="15" fill="rgba(255,255,255,0.88)" rx="3" stroke="#e2e8f0" stroke-width="0.5" />
+            <text x="6" y="11" font-size="9" font-weight="600" fill="#1e293b">Total: ${maxPanels} Modules (${maxKw.toFixed(2)} kWp)</text>
+          </g>
+        </svg>
+      `;
+    }
+
+    function renderAcMatrix(singleArea, pWatt, clearancePct) {
+      const tbody = document.getElementById('acMatrixTableBody');
+      if (!tbody) return;
+
+      const capacities = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 50];
+      let rowsHtml = '';
+
+      capacities.forEach(kw => {
+        const panels = Math.ceil((kw * 1000) / pWatt);
+        const realized = (panels * pWatt) / 1000;
+        const netArea = panels * singleArea;
+        const grossArea = netArea * (1 + clearancePct / 100);
+        const estW = Math.sqrt(grossArea / 1.5);
+        const estL = estW * 1.5;
+
+        rowsHtml += `
+          <tr onclick="loadAcPresetCapacity(${kw})">
+            <td><strong>${kw} kW</strong></td>
+            <td>${panels} Panels</td>
+            <td>${realized.toFixed(2)} kW</td>
+            <td>${netArea.toFixed(1)} sq ft</td>
+            <td><strong style="color:#8b3f10;">${grossArea.toFixed(1)} sq ft</strong></td>
+            <td>~${estL.toFixed(1)} ft × ${estW.toFixed(1)} ft</td>
+            <td><button type="button" class="ac-btn-sm" style="padding:3px 8px; font-size:0.75rem;" onclick="event.stopPropagation(); loadAcPresetCapacity(${kw});">Load</button></td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = rowsHtml;
+    }
+
+    function loadAcPresetCapacity(kw) {
+      const el = document.getElementById('calc_target_kw');
+      if (el) {
+        el.value = kw;
+        updateAreaCalc('targetKw');
+        showAcToast(`Loaded ${kw} kW into Capacity Calculator!`);
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function initAreaCapacityCalculator() {
+      // Preset listener
+      document.getElementById('ac_panel_preset')?.addEventListener('change', function() {
+        const preset = AC_PANEL_PRESETS[this.value];
+        if (preset) {
+          const elW = document.getElementById('calc_panel_w');
+          const elH = document.getElementById('calc_panel_h');
+          const elWatt = document.getElementById('calc_panel_watt');
+          if (elW) elW.value = preset.w;
+          if (elH) elH.value = preset.h;
+          if (elWatt) elWatt.value = preset.watt;
+          updateAreaCalc();
+        }
+      });
+
+      // Panel Dim & Watt inputs
+      ['calc_panel_w', 'calc_panel_h', 'calc_panel_watt'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', () => {
+          const sel = document.getElementById('ac_panel_preset');
+          if (sel) sel.value = 'custom';
+          updateAreaCalc();
+        });
+      });
+
+      // Mode A inputs
+      ['calc_target_kw', 'calc_clearance_pct'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', () => updateAreaCalc('targetKw'));
+        document.getElementById(id)?.addEventListener('change', () => updateAreaCalc('targetKw'));
+      });
+
+      // Mode B inputs
+      ['calc_area_len', 'calc_area_wid'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', () => updateAreaCalc('dimensions'));
+      });
+      document.getElementById('calc_avail_area')?.addEventListener('input', () => updateAreaCalc('availArea'));
+      document.getElementById('calc_usable_pct')?.addEventListener('change', () => updateAreaCalc('usablePct'));
+
+      // Copy buttons
+      document.getElementById('btnAcApplyToSite')?.addEventListener('click', () => {
+        const grossAreaEl = document.getElementById('ac_res_gross_area');
+        if (!grossAreaEl) return;
+        const val = parseFloat(grossAreaEl.textContent) || 0;
+        const siteRoofArea = document.getElementById('site_roof_area');
+        if (siteRoofArea) {
+          siteRoofArea.value = val.toFixed(1);
+          showAcToast(`✓ Copied ${val.toFixed(1)} sq ft to Site Survey Roof Area!`);
+        }
+      });
+
+      document.getElementById('btnAcApplyToTech1')?.addEventListener('click', () => {
+        const realizedEl = document.getElementById('ac_res_realized_kw');
+        const panelsEl = document.getElementById('ac_res_panels_needed');
+        const wattEl = document.getElementById('calc_panel_watt');
+        if (!realizedEl || !panelsEl || !wattEl) return;
+
+        const kw = parseFloat(realizedEl.textContent) || 0;
+        const panels = parseInt(panelsEl.textContent) || 0;
+        const watt = parseInt(wattEl.value) || 550;
+
+        const techCap = document.getElementById('tech_capacity');
+        const techWatt = document.getElementById('tech_panel_watt');
+        const techQty = document.getElementById('tech_panel_qty');
+
+        if (techCap) techCap.value = kw.toFixed(2);
+        if (techWatt) techWatt.value = watt;
+        if (techQty) techQty.value = panels;
+
+        showAcToast(`✓ Copied ${kw.toFixed(2)} kW & ${panels} panels to Technical Details!`);
+      });
+
+      document.getElementById('btnAcApplyToTech2')?.addEventListener('click', () => {
+        const maxKwEl = document.getElementById('ac_res_max_kw');
+        const maxPanelsEl = document.getElementById('ac_res_max_panels');
+        const wattEl = document.getElementById('calc_panel_watt');
+        if (!maxKwEl || !maxPanelsEl || !wattEl) return;
+
+        const kw = parseFloat(maxKwEl.textContent) || 0;
+        const panels = parseInt(maxPanelsEl.textContent) || 0;
+        const watt = parseInt(wattEl.value) || 550;
+
+        const techCap = document.getElementById('tech_capacity');
+        const techWatt = document.getElementById('tech_panel_watt');
+        const techQty = document.getElementById('tech_panel_qty');
+
+        if (techCap) techCap.value = kw.toFixed(2);
+        if (techWatt) techWatt.value = watt;
+        if (techQty) techQty.value = panels;
+
+        showAcToast(`✓ Copied ${kw.toFixed(2)} kW & ${panels} panels to Technical Details!`);
+      });
+
+      // Import buttons
+      const doImportSite = () => {
+        const siteRoofArea = document.getElementById('site_roof_area');
+        const val = parseFloat(siteRoofArea ? siteRoofArea.value : 0) || 0;
+        if (val > 0) {
+          const el = document.getElementById('calc_avail_area');
+          if (el) el.value = val;
+          updateAreaCalc('availArea');
+          showAcToast(`✓ Imported ${val} sq ft from Site Survey!`);
+        } else {
+          showAcToast(`⚠️ Site Survey roof area is empty. Enter roof area in Site Survey first.`);
+        }
+      };
+
+      document.getElementById('btnAcImportSite')?.addEventListener('click', doImportSite);
+      document.getElementById('btnAcImportSiteFromCard')?.addEventListener('click', doImportSite);
+
+      document.getElementById('btnAcImportTech')?.addEventListener('click', () => {
+        const techCap = document.getElementById('tech_capacity');
+        const techWatt = document.getElementById('tech_panel_watt');
+        const cap = parseFloat(techCap ? techCap.value : 0) || 0;
+        const watt = parseFloat(techWatt ? techWatt.value : 0) || 0;
+
+        let imported = false;
+        if (cap > 0) {
+          const targetEl = document.getElementById('calc_target_kw');
+          if (targetEl) targetEl.value = cap;
+          imported = true;
+        }
+        if (watt > 0) {
+          const wattEl = document.getElementById('calc_panel_watt');
+          if (wattEl) wattEl.value = watt;
+          const sel = document.getElementById('ac_panel_preset');
+          if (sel) sel.value = 'custom';
+          imported = true;
+        }
+        if (imported) {
+          updateAreaCalc('targetKw');
+          showAcToast(`✓ Imported capacity & module watt from Technical Details!`);
+        } else {
+          showAcToast(`⚠️ Technical Details capacity/wattage is empty.`);
+        }
+      });
+
+      document.getElementById('btnAcResetDefaults')?.addEventListener('click', () => {
+        const sel = document.getElementById('ac_panel_preset');
+        if (sel) sel.value = '550_mono';
+        const preset = AC_PANEL_PRESETS['550_mono'];
+        if (preset) {
+          document.getElementById('calc_panel_w').value = preset.w;
+          document.getElementById('calc_panel_h').value = preset.h;
+          document.getElementById('calc_panel_watt').value = preset.watt;
+        }
+        document.getElementById('calc_target_kw').value = 5.0;
+        document.getElementById('calc_clearance_pct').value = 20;
+        document.getElementById('calc_area_len').value = 30;
+        document.getElementById('calc_area_wid').value = 20;
+        document.getElementById('calc_avail_area').value = 600;
+        document.getElementById('calc_usable_pct').value = 80;
+        updateAreaCalc();
+        showAcToast(`🔄 Reset Area & Capacity Calculator to default settings.`);
+      });
+
+      // Initial execution
+      updateAreaCalc();
+    }
+
     document.addEventListener('input', triggerAutoSaveDraft);
     document.addEventListener('change', triggerAutoSaveDraft);
 
@@ -6102,6 +7174,7 @@ XLSX.utils.book_append_sheet(wb, makeSheetWithHeading(d, "Technical Details",
     calcDCVoltageDrop();
     checkInverterMPPT();
     calcSolarROI();
+    initAreaCapacityCalculator();
     checkAndOfferRestoreDraft();
 
     document.getElementById('btnExportGLTF')?.addEventListener('click', () => {
